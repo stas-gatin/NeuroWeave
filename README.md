@@ -57,8 +57,4 @@ graph TD;
 <!-- readme: collaborators -start -->
 <!-- readme: collaborators -end -->
 
-## Contributors
-
-<!-- readme: contributors -start -->
-<!-- readme: contributors -end -->
 
