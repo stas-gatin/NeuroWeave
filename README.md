@@ -24,6 +24,7 @@ Jerarquía de clases:
 graph TD;
     A-->B;
     A-->C;
-    B-->D;
+    B-->D
+    B-->Class_1;
     C-->D;
 ```
