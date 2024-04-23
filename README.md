@@ -4,11 +4,26 @@
 </p>
 
 
-
 ![Static Badge](https://img.shields.io/badge/Version-v1.0.0-green)
 ![Static Badge](https://img.shields.io/badge/Colaboradores-5-blue)
 <img src="https://img.shields.io/static/v1?label=%F0%9F%8C%9F&message=If%20Useful&style=style=flat&color=BC4E99" alt="Star Badge"/>
 [![Star on GitHub](https://img.shields.io/github/stars/stas-gatin/stas-gatin.svg?style=social)](https://github.com/stas-gatin/proyecto_programacion/stargazers)
+
+> [!NOTE]
+> The library is still under development!
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate user attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
+
 
 
 ## Task list: <img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30">
