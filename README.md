@@ -1,4 +1,4 @@
-# proyecto_programacion
+# NeuroWave
 
 <p align="center">
     <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=30&pause=1000&color=F57D07&center=true&vCenter=true&random=false&width=435&lines=Tensorflow;PyTorch;????" alt="Typing SVG" /></a>
@@ -11,6 +11,11 @@
 Task list:
 - [x] Encontrar como guardar modelos de redes neuronales
 - [ ] 1. Tensores
+  <details>
+    <summary>Click to expand more about Tensores</summary>
+    Text describing what tensores are, how they are used in the project, or other relevant information.
+  </details>
+
 - [ ] 2. Clases para las capas que conforman los modelos (grande, podría ser dividido en varias personas, o no)
 - [ ] 3. Guardado de modelos en un formato eficiente
 - [ ] 4. Cargado y preparado de datasets ocn clases (Datasets, Dataloaders)
@@ -28,3 +33,8 @@ graph TD;
     B-->Class_1;
     C-->D;
 ```
+
+- [ ] 1. <details>
+  <summary>Tensores</summary>
+  Text.
+</details>
