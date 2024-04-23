@@ -9,7 +9,7 @@
 ![Static Badge](https://img.shields.io/badge/Colaboradores-5-blue)
 [![Star on GitHub](https://img.shields.io/github/stars/stas-gatin/stas-gatin.svg?style=social)](https://github.com/stas-gatin/proyecto_programacion/stargazers)
 
-## Task list:
+## Task list: <img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30">
 - [x] Encontrar como guardar modelos de redes neuronales
 - [ ] 1. Tensores
   <details>
