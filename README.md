@@ -1,14 +1,12 @@
-# NeuroWave
+# NeuroWeave
 
-<p align="center">
-    <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=30&pause=1000&color=F57D07&center=true&vCenter=true&random=false&width=435&lines=Tensorflow;PyTorch;????" alt="Typing SVG" /></a>
-</p>
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=30&duration=2000&pause=500&multiline=true&repeat=false&random=false&width=800&height=100&lines=Interweaving+Intelligence;Where+Neurons+and+Networks+Connect)](https://git.io/typing-svg)
 
 ![Static Badge](https://img.shields.io/badge/Version-v1.0.0-green)
 ![Static Badge](https://img.shields.io/badge/Colaboradores-5-blue)
 [![Star on GitHub](https://img.shields.io/github/stars/stas-gatin/stas-gatin.svg?style=social)](https://github.com/stas-gatin/proyecto_programacion/stargazers)
 
-Task list:
+## Task list:
 - [x] Encontrar como guardar modelos de redes neuronales
 - [ ] 1. Tensores
   <details>
@@ -23,7 +21,7 @@ Task list:
 - [ ] 6. Métodos y clases para el manejo aritmético de Tensores
 - [ ] 7. Implementación de métodos con opción de ejecución el GPU (quizás, sobre consideración)
 
-Jerarquía de clases:
+## Jerarquía de clases:
 
 ```mermaid
 graph TD;
@@ -34,7 +32,3 @@ graph TD;
     C-->D;
 ```
 
-- [ ] 1. <details>
-  <summary>Tensores</summary>
-  Text.
-</details>
