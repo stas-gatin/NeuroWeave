@@ -27,7 +27,7 @@
 
 
 ## Task list: <img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30">
-- [x] Encontrar como guardar modelos de redes neuronales
+- [x] Encontrar como guardar modelos de redes neuronales (libreria h5py)
 - [ ] 1. Tensores
   <details>
     <summary>Click to expand more about Tensores</summary>
