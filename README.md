@@ -45,7 +45,12 @@
 
 ```mermaid
 graph TD;
-    NeuroWeave-->save_model;
+    weave-->save_model;
+    weave-->glimpse;
+    weave-->optim;
+    weave-->random;
+    weave-->nn;
+    nn-->modules;
     save_model-->saver;
     save_model-->loader;
 ```
@@ -53,6 +58,44 @@ graph TD;
 ## Collaborators
 
 <!-- readme: collaborators -start -->
+<table>
+<tr>
+    <td align="center">
+        <a href="https://github.com/Shillianne">
+            <img src="https://avatars.githubusercontent.com/u/148450883?v=4" width="100;" alt="Shillianne"/>
+            <br />
+            <sub><b>Shillianne</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/hugourmaz">
+            <img src="https://avatars.githubusercontent.com/u/149888695?v=4" width="100;" alt="hugourmaz"/>
+            <br />
+            <sub><b>Null</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/CARLOSMOLERA">
+            <img src="https://avatars.githubusercontent.com/u/152264006?v=4" width="100;" alt="CARLOSMOLERA"/>
+            <br />
+            <sub><b>CARLOSMOLERA</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/paatriiperezz">
+            <img src="https://avatars.githubusercontent.com/u/152264650?v=4" width="100;" alt="paatriiperezz"/>
+            <br />
+            <sub><b>Patricia Pérez Ferre</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/stas-gatin">
+            <img src="https://avatars.githubusercontent.com/u/155986458?v=4" width="100;" alt="stas-gatin"/>
+            <br />
+            <sub><b>Stanislav Gatin</b></sub>
+        </a>
+    </td></tr>
+</table>
 <!-- readme: collaborators -end -->
 
 
