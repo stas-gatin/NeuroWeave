@@ -45,7 +45,12 @@
 
 ```mermaid
 graph TD;
-    NeuroWeave-->save_model;
+    weave-->save_model;
+    weave-->glimpse;
+    weave-->optim;
+    weave-->random;
+    weave-->nn;
+    nn-->modules;
     save_model-->saver;
     save_model-->loader;
 ```
