@@ -1,4 +1,4 @@
-import NeuroWeave
+import Weave
 
 import numpy as np
 
@@ -12,6 +12,6 @@ test_model = {
     }
 }
 
-NeuroWeave.save_model(test_model, 'my_model.h5', overwrite=True)
+Weave.save_model(test_model, 'my_model.h5', overwrite=True)
 
 
