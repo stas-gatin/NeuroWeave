@@ -1,5 +1,4 @@
 import weave
-
 import numpy as np
 
 
@@ -12,8 +11,4 @@ test_model = {
     }
 }
 
-#weave.save_model(test_model, 'my_model.h5', overwrite=True)
-
-model = weave.load_model('my_model.h5')
-print(model)
-
+weave.save_model(test_model, 'my_model.h5', overwrite=True)
