@@ -71,7 +71,7 @@ graph TD;
         <a href="https://github.com/hugourmaz">
             <img src="https://avatars.githubusercontent.com/u/149888695?v=4" width="100;" alt="hugourmaz"/>
             <br />
-            <sub><b>hugourmaz</b></sub>
+            <sub><b>Hugourmaz</b></sub>
         </a>
     </td>
     <td align="center">
