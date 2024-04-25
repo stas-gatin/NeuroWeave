@@ -1,2 +1,2 @@
 # weave/__init__.py
-from .save_model.saver import save_model, load_model
+from .neuro_storage.saver import save_model, load_model
