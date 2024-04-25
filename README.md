@@ -45,11 +45,9 @@
 
 ```mermaid
 graph TD;
-    A-->B;
-    A-->C;
-    B-->D
-    B-->Class_1;
-    C-->D;
+    NeuroWeave-->save_model;
+    save_model-->saver;
+    save_model-->loader;
 ```
 
 ## Collaborators
