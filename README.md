@@ -59,14 +59,14 @@ graph TD;
         <a href="https://github.com/Shillianne">
             <img src="https://avatars.githubusercontent.com/u/148450883?v=4" width="100;" alt="Shillianne"/>
             <br />
-            <sub><b>Null</b></sub>
+            <sub><b>Shillianne</b></sub>
         </a>
     </td>
     <td align="center">
         <a href="https://github.com/CARLOSMOLERA">
             <img src="https://avatars.githubusercontent.com/u/152264006?v=4" width="100;" alt="CARLOSMOLERA"/>
             <br />
-            <sub><b>Null</b></sub>
+            <sub><b>CARLOSMOLERA</b></sub>
         </a>
     </td>
     <td align="center">
