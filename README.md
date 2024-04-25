@@ -28,10 +28,10 @@
 
 ## Task list: <img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30">
 - [x] Encontrar como guardar modelos de redes neuronales (libreria h5py)
-- [ ] 1. Tensores
+- [ ] 1. Tensors
   <details>
     <summary>Click to expand more about Tensores</summary>
-    Text describing what tensores are, how they are used in the project, or other relevant information.
+    Tensors a fundamental data structure used in Machine Learning for multi-dimensional matrix operations.
   </details>
 
 - [ ] 2. Clases para las capas que conforman los modelos (grande, podría ser dividido en varias personas, o no)
