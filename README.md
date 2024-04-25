@@ -45,14 +45,14 @@
 
 ```mermaid
 graph TD;
-    weave-->save_model;
+    weave-->neuro_storage;
     weave-->glimpse;
     weave-->optim;
     weave-->random;
     weave-->nn;
     nn-->modules;
-    save_model-->saver;
-    save_model-->loader;
+    neuro_storage-->saver;
+    neuro_storage-->loader;
 ```
 
 ## Collaborators
