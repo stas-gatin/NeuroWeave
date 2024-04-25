@@ -2,7 +2,7 @@ import h5py
 import os
 import numpy
 
-print(numpy.version.version)
+
 def save_model(model, file_path, overwrite=False):
     """
     Save a neural network model to an HDF5 file.
