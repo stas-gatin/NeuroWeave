@@ -6,8 +6,8 @@ import time
 
 
 # [NOTE]: Cuando __init__ y __new__ están juntos, __new__ se ejecuta primero
+# Heredamos de la clase array de numpy(father)
 class Tensor(np.ndarray):
-    # Heredamos de la clase array de numpy(father)
     """
     Tensor class for all the arithmetic needs of the library. Inherits from numpy.ndarray to save time in recreating functionality.
     Adds all the necesary components for the tensor to work in the environment of a Machine Learning language.
@@ -56,17 +56,23 @@ class Tensor(np.ndarray):
             self[*start] = data[i]
 
     def __add__(self, other: Any) -> "Tensor":
+        # Restringimos las cosas que podemos sumar
         if type(other) in [np.ndarray, list]:
             other = Tensor(data=other)
         elif isinstance(other, int):
             return Tensor(data=(np.asarray(self) + other))
+        # Si no es array de numpy, lsita, entero o tensor, devolvemos error (raise TypeError)
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot add 'Tensor' and {type(other)} objects.")
 
+        # si hemos llegado hasta aquí, si o si tenemos un tensor
+        # self y other, son los hijos que han creado al nuevo tensor (out)
         out = Tensor(data=(np.asarray(self) + np.asarray(other)), _children=(self, other), _op='+')
 
+        # Dentro de _.backward tenemos guardado la solución de las derivadas parciales
+        # GABRIEL COMENTA ESTO QUE ES IMPORTANTE
         def _backward():
-            self.grad += Tensor(data=out.grad)
+            self.grad += Tensor(data=out.grad) # grad...
             other.grad += Tensor(data=out.grad)
 
         out._backward = _backward
@@ -154,17 +160,28 @@ class Tensor(np.ndarray):
     def data(self, value):
         self._data = value
 
+
+    # COMENTAR ESTO PATRI
     def backward(self):
+
+        # Hacemos una lista llamada Topo donde se guardaran todos los objetos que vamos a usar y almacena el orden de uso de los tensores
         topo = []
+        # Un conjunto donde se almacenan todos los tensores por lo que hemos pasado sin considerar el orden
         visited = set()
 
         def build_topo(t: "Tensor"):
             if id(t) not in visited:
+                # id: dirección en memoria del tensor, que no varía
+                # Vemos si su id está en visited y lo añadimos para no volver a pasar
                 visited.add(id(t))
+                # _prev: es un conjunto que contiene los hijos, como una id (números enteros muy grandes)
                 for child in t._prev:
+                    # reconstruye el objeto con la id que le estoy dando, que nos cree un objeto y nos devuelva el valor
+                    # revisar comentario, IMPORTANTE
                     build_topo(ctypes.cast(child, ctypes.py_object).value)
                 topo.append(t)
 
+        # CAMBIOS QUE HAREMOS CUANDO STAS Y HUGO TENGAN SU PARTE
         build_topo(self)
         self.grad = (Tensor(self.shape) * 0) + 1
         for node in reversed(topo):
