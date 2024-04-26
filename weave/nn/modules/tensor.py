@@ -40,12 +40,12 @@ class Tensor(np.ndarray):
             self[i, :] = data[i]
 
     def __add__(self, other: Any) -> "Tensor":
-        if isinstance(other, np.ndarray | list):
+        if type(other) in [np.ndarray, list]:
             other = Tensor(data=other)
         elif isinstance(other, int):
             return Tensor(data=(np.asarray(self) + other))
         elif not isinstance(other, Tensor):
-            raise TypeError(f"Cannot add 'Tensor' and {type(other)} objects.")
+            raise TypeError(f"Cannot multiply 'Tensor' and {type(other)} objects.")
 
         out = Tensor(data=(np.asarray(self) + np.asarray(other)), _children=(self, other), _op='+')
 
@@ -87,6 +87,26 @@ class Tensor(np.ndarray):
         out._backward = _backward
         return out
 
+    def __rmul__(self, other: Any) -> "Tensor":
+        return self * other
+
+    def __imul__(self, other: Any) -> "Tensor":
+        return self * other
+
+    def __matmul__(self, other: Any) -> "Tensor":
+        if type(other) in [np.ndarray, list]:
+            other = Tensor(data=other)
+        elif not isinstance(other, Tensor):
+            raise TypeError(f"Cannot multiply 'Tensor' and {type(other)}")
+        out = Tensor(data=(np.asarray(self) @ np.asarray(other)), _children=(self, other), _op='@')
+
+        # TODO: Find how to calculate the backwards for usual matrix multiplication
+        def _backward():
+            pass
+
+        out.backward = _backward
+        return out
+
     @property
     def data(self):
         return self._data
@@ -100,7 +120,6 @@ class Tensor(np.ndarray):
         visited = set()
 
         def build_topo(t: "Tensor"):
-            print(t)
             if id(t) not in visited:
                 visited.add(id(t))
                 for child in t._prev:
