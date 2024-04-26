@@ -7,6 +7,8 @@ import ctypes
 # [NOTE]: Cuando __init__ y __new__ están juntos, __new__ se ejecuta primero
 class Tensor(np.ndarray):
     """
+
+
     Tensor class for all the arithmetic needs of the library. Inherits from numpy.ndarray to save time in recreating functionality.
     Adds all the necesary components for the tensor to work in the environment of a Machine Learning language.
     This class CAN be accessed by the users but it will preferably be wraped in other methods of this library for the users to have
