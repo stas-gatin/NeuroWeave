@@ -2,6 +2,7 @@ import random
 from typing import Any
 import numpy as np
 import ctypes
+import time
 
 
 # [NOTE]: Cuando __init__ y __new__ están juntos, __new__ se ejecuta primero
@@ -17,16 +18,18 @@ class Tensor(np.ndarray):
     def __new__(cls, shape=None, dtype=float, buffer=None, offset=0, strides=None, order=None, data=None,
                 _children=(), _op=None):
         if shape is None and data is not None:
-            shape = np.asarray(data).shape
+            array = np.asarray(data)
+            shape = array.shape
+            dtype = array.dtype
         elif shape is None and data is None:
             raise AttributeError('Either shape or data must be given when creating the array.')
         return super().__new__(cls, shape, dtype, buffer, offset, strides, order)
 
     def __init__(self, shape=None, dtype=float, buffer=None, offset=0, strides=None, data=None,
                  _children=(), _op=None):
+        self.data = data
         if data is not None:
             self._populate(data)
-        self.data = data
         self.grad = 0
         self._backward = lambda: None
         self._prev = set(id(child) for child in _children)
@@ -36,8 +39,10 @@ class Tensor(np.ndarray):
         pass
 
     def _populate(self, data):
-        for i in range(self.shape[0]):
-            self[i, :] = data[i]
+        slicing = [slice(None, None, None) for _ in enumerate(self.shape[1:])]
+        for i in range(self.shape[-1]):
+            start = [slice(i, None, None)] + slicing
+            self[*start] = data[i]
 
     def __add__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
@@ -45,7 +50,7 @@ class Tensor(np.ndarray):
         elif isinstance(other, int):
             return Tensor(data=(np.asarray(self) + other))
         elif not isinstance(other, Tensor):
-            raise TypeError(f"Cannot multiply 'Tensor' and {type(other)} objects.")
+            raise TypeError(f"Cannot add 'Tensor' and {type(other)} objects.")
 
         out = Tensor(data=(np.asarray(self) + np.asarray(other)), _children=(self, other), _op='+')
 
@@ -92,6 +97,26 @@ class Tensor(np.ndarray):
 
     def __imul__(self, other: Any) -> "Tensor":
         return self * other
+
+    def __pow__(self, other: Any) -> "Tensor":
+        assert isinstance(other, (int, float)), 'Powers of types other than int and float are not supported.'
+        out = Tensor(data=(np.asarray(self) ** other), _children=(self,), _op=f'**{other}')
+
+        def _backward():
+            self.grad += other * Tensor(data=self.data) ** (other - 1) * out.grad
+
+        out._backward = _backward
+        return out
+
+    def __truediv__(self, other: Any) -> "Tensor":
+        raise NotImplemented("__truediv__ is not yet implemented.")
+        # if type(other) in [np.ndarray, list]:
+        #     other = Tensor(data=other)
+        # elif isinstance(other, int):
+        #     return Tensor(data=(np.asarray(self) / other))
+        # elif not isinstance(other, Tensor):
+        #     raise TypeError(f"Cannot divide 'Tensor' and {type(other)} objects.")
+        # out = Tensor(data=(np.asarray(self) / np.asarray(other)), _children=(self, other), _op='/')
 
     def __matmul__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
