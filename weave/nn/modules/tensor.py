@@ -100,7 +100,7 @@ class Tensor(np.ndarray):
             raise TypeError(f"Cannot multiply 'Tensor' and {type(other)}")
         out = Tensor(data=(np.asarray(self) @ np.asarray(other)), _children=(self, other), _op='@')
 
-        # TODO: Find how to calculate the backwards for usual matrix multiplication 12331
+        # TODO: Find how to calculate the backwards for usual matrix multiplication
         def _backward():
             pass
 
