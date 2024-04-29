@@ -12,8 +12,7 @@ class Tensor(np.ndarray):
     This class CAN be accessed by the users, but it will preferably be wrapped in other methods of this library for the
     users to have an easier understanding of how it works.
     
-    [NOTE]: this class is not yet finished, all current capabilities are susceptible to change,
-    same goes for this docstring.
+    [NOTE]: this class is not yet finished, but most of its features are already implemented.
     """
     def __new__(cls, shape=None, dtype=None, buffer=None, offset=0, strides=None, order=None, data=None,
                 _children=(), _op=None, use_grad: bool = False):
