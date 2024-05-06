@@ -65,7 +65,7 @@ weave.saver(model, file_path=None, overwrite=False)
     overwrite : bool, determines whether to overwrite the file if it already exists.
 
 > [!WARNING]
-> Set overwrite=True to overwrite it.
+> Set overwrite=True to overwrite the model file.
 
 ## Jerarquía de clases:
 
