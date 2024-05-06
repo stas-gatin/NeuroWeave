@@ -34,11 +34,38 @@
   </details>
 
 - [ ] 2. Clases para las capas que conforman los modelos (grande, podría ser dividido en varias personas, o no)
-- [ ] 3. Guardado de modelos en un formato eficiente
+- [x] 3. Guardado de modelos en un formato eficiente
 - [ ] 4. Cargado y preparado de datasets ocn clases (Datasets, Dataloaders)
 - [ ] 5. Visualización con Manim u otros (?)
 - [ ] 6. Métodos y clases para el manejo aritmético de Tensores
 - [ ] 7. Implementación de métodos con opción de ejecución el GPU (quizás, sobre consideración)
+
+## Docs:
+
+### Load model
+
+Load a model from an HDF5 file.
+```python
+weave.loader(file_path)
+```
+    Parameters:
+    file_path : string, the path to the file from which the model is being loaded.
+
+    Returns:
+    A dictionary with 'weights' and 'config'.
+
+### Save model
+Save a neural network model to an HDF5 file.
+```python
+weave.saver(model, file_path=None, overwrite=False)
+```
+    Parameters:
+    model : model object, which must have 'weights' and 'config' attributes.
+    file_path : string, the path to the file where the model will be saved.
+    overwrite : bool, determines whether to overwrite the file if it already exists.
+
+> [!WARNING]
+> Set overwrite=True to overwrite it.
 
 ## Jerarquía de clases:
 
