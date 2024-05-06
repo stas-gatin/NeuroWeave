@@ -46,7 +46,7 @@
 
 Load a model from an HDF5 file.
 ```python
-weave.loader(file_path)
+model = weave.loader(file_path)
 ```
     Parameters:
     file_path : string, the path to the file from which the model is being loaded.
