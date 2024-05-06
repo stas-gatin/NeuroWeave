@@ -69,16 +69,29 @@ weave.saver(model, file_path=None, overwrite=False)
 
 ## Jerarquía de clases:
 
+- ![#00ff00](https://placehold.co/15x15/00ff00/00ff00.png) `Done`
+- ![#ffff00](https://placehold.co/15x15/ffff00/ffff00.png) `In process`
+- ![#ff0000](https://placehold.co/15x15/ff0000/ff0000.png) `Not started`
+
 ```mermaid
 graph TD;
-    weave-->neuro_storage;
-    weave-->glimpse;
-    weave-->optim;
-    weave-->random;
-    weave-->nn;
-    nn-->modules;
-    neuro_storage-->saver;
-    neuro_storage-->loader;
+    weave(Weave)-->neuro_storage(Neuro Storage);
+    weave-->glimpse(Glimpse);
+    weave-->optim(Optimization);
+    weave-->random(Random);
+    weave-->nn(Neural Network);
+    nn-->modules(Modules);
+    neuro_storage-->saver(Saver);
+    neuro_storage-->loader(Loader);
+
+    classDef in_process fill:#000,stroke:#ffff00,stroke-width:2px;
+    classDef done fill:#000,stroke:#00ff00,stroke-width:2px;
+    classDef not_done fill:#000,stroke:#ff0000,stroke-width:2px;
+
+    class weave,nn,modules,network in_process;
+    class neuro_storage,saver,loader done;
+    class glimpse,optim,random not_done;
+
 ```
 
 ## Collaborators
