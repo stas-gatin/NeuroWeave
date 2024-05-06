@@ -57,7 +57,7 @@ model = weave.loader(file_path)
 ### Save model
 Save a neural network model to an HDF5 file.
 ```python
-weave.saver(model, file_path=None, overwrite=False)
+weave.saver(model, file_path='path/to/save', overwrite=False)
 ```
     Parameters:
     model : model object, which must have 'weights' and 'config' attributes.
