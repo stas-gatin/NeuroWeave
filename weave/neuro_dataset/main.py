@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 __all__ = [
     "Dataset"
@@ -39,4 +40,18 @@ class Dataset:
 
 
 class StandardScaler:
-    pass
+    def __init__(self):
+        self.means_ = None
+        self.stds_ = None
+
+    def fit(self, X) -> None:
+        self.means_ = np.mean(X, axis=0)
+        self.stds_ = np.std(X, axis=0, ddof=0)
+
+    def transform(self, X) -> list:
+        return (X - self.means_) / self.stds_
+
+    def fit_transform(self, X) -> list:
+        self.fit(X)
+        return self.transform(X)
+
