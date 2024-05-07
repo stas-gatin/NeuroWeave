@@ -25,13 +25,29 @@ class Dataset:
     def drop(self):
         pass
 
-    def train_test_split(self, x: list, y: list, test_size=0.2, random_state=4):
-        # x = labels
-        # y = data to predict
+    def train_test_split(self, x: list, y: str, test_size=0.2, seed=1):
         x = self._data[x[::]].values
+        y = self._data[y].values
 
+        # Checking for None values in x and y
+        if np.any(pd.isnull(x)) or np.any(pd.isnull(y)):
+            # Remove rows where any None values occur
+            valid_indices = ~np.isnan(x).any(axis=1) & ~np.isnan(y)
+            x = x[valid_indices]
+            y = y[valid_indices]
 
-        pass
+        # Splitting the data into training and testing sets
+        num_data = len(x)
+        np.random.seed(seed)
+        shuffled_indices = np.random.permutation(num_data)
+        test_set_size = int(num_data * test_size)
+        test_indices = shuffled_indices[:test_set_size]
+        train_indices = shuffled_indices[test_set_size:]
+
+        X_train, X_test = x[train_indices], x[test_indices]
+        y_train, y_test = y[train_indices], y[test_indices]
+
+        return X_train, X_test, y_train, y_test
 
 
     @property
@@ -54,4 +70,3 @@ class StandardScaler:
     def fit_transform(self, X) -> list:
         self.fit(X)
         return self.transform(X)
-
