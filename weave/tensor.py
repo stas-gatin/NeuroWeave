@@ -40,7 +40,7 @@ class Tensor(np.ndarray):
         self._prev = set(id(child) for child in _children)
         self._op = _op
         self._grad_enabled = use_grad
-        self._device = device
+        self.device = device
 
     def __array_finalize__(self, obj):
         # We just make use of NumPy's API, but we have to adapt it in order to get a Tensor object
@@ -62,7 +62,7 @@ class Tensor(np.ndarray):
             other = Tensor(data=other, use_grad=self._grad_enabled)
         elif isinstance(other, (int, float)):  # separated addition for integers and floats
             out = Tensor(data=(np.asarray(self.data) + other), _children=(self,), _op='+', use_grad=self._grad_enabled,
-                         device=self._device)
+                         device=self.device)
 
             def _backward():
                 # backward pass for addition operations
@@ -74,9 +74,11 @@ class Tensor(np.ndarray):
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot add 'Tensor' and {type(other)} objects.")
 
+        assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: '\
+                                            f'{self.device} and {other.device}.'
         # We relay on NumPy to handle the actual arithmetic operations
         out = Tensor(data=(np.asarray(self.data) + np.asarray(other.data)), _children=(self, other), _op='+',
-                     use_grad=self._grad_enabled, device=self._device)
+                     use_grad=self._grad_enabled, device=self.device)
 
         def _backward():
             # backward pass for addition operations (gradient flows toward the children)
@@ -122,7 +124,7 @@ class Tensor(np.ndarray):
             other = Tensor(data=other, use_grad=self._grad_enabled)
         elif isinstance(other, (int, float)):  # specialized output for mul of Tensor and a number
             out = Tensor(data=(np.asarray(self.data) * other), _children=(self,), _op='*', use_grad=self._grad_enabled,
-                         device=self._device)
+                         device=self.device)
 
             def _backward():
                 # backward pass using the chain rule for multiplication
@@ -133,8 +135,11 @@ class Tensor(np.ndarray):
             return out
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot multiply 'Tensor' and {type(other)} objects.")
+
+        assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
+                                            f'{self.device} and {other.device}.'
         out = Tensor(data=(np.asarray(self.data) * np.asarray(other.data)), _children=(self, other), _op='*',
-                     use_grad=self._grad_enabled, device=self._device)
+                     use_grad=self._grad_enabled, device=self.device)
 
         def _backward():
             # backward pass using the chain rule for multiplication
@@ -162,7 +167,7 @@ class Tensor(np.ndarray):
             other = Tensor(data=other, use_grad=self._grad_enabled)
         elif isinstance(other, (int, float)):
             out = Tensor(data=(np.asarray(self.data, dtype=float) ** other), _children=(self,), _op='**',
-                         use_grad=self._grad_enabled, device=self._device)
+                         use_grad=self._grad_enabled, device=self.device)
 
             def _backward():
                 # backward pass making use of the derivative of a power (d/dx x**2 = 2*x)
@@ -173,8 +178,11 @@ class Tensor(np.ndarray):
             return out
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot raise Tensor to the power of a {type(other)}")
+
+        assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
+                                            f'{self.device} and {other.device}.'
         out = Tensor(data=(np.asarray(self.data) ** np.asarray(other.data)), _children=(self, other), _op='**',
-                     use_grad=self._grad_enabled, device=self._device)
+                     use_grad=self._grad_enabled, device=self.device)
 
         def _backward():
             # backward pass making use of the partial derivative of powers
@@ -191,7 +199,7 @@ class Tensor(np.ndarray):
             return Tensor(data=other, use_grad=self._grad_enabled) ** self
         elif isinstance(other, (int, float)):
             out = Tensor(data=(other ** np.asarray(self.data)), _children=(self,), _op='**',
-                         use_grad=self._grad_enabled, device=self._device)
+                         use_grad=self._grad_enabled, device=self.device)
 
             def _backward():
                 # since this is n**x (n a number), we use d/dx n**x = (n**x) * ln(n)
@@ -220,8 +228,11 @@ class Tensor(np.ndarray):
             return self * (other ** -1)
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot divide Tensor by object of type {type(other)}.")
+
+        assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
+                                            f'{self.device} and {other.device}.'
         out = Tensor(data=(np.asarray(self.data) / np.asarray(other.data)), _children=(self, other), _op='/',
-                     use_grad=self._grad_enabled, device=self._device)
+                     use_grad=self._grad_enabled, device=self.device)
 
         def _backward():
             # We use the partial derivatives for the division of variables
@@ -265,8 +276,11 @@ class Tensor(np.ndarray):
             other = Tensor(data=other, use_grad=self._grad_enabled)
         elif not isinstance(other, Tensor):  # don't allow multiplication with scalars
             raise TypeError(f"Cannot multiply 'Tensor' and {type(other)}")
+
+        assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
+                                            f'{self.device} and {other.device}.'
         out = Tensor(data=(np.asarray(self.data) @ np.asarray(other.data)), _children=(self, other), _op='@',
-                     use_grad=self._grad_enabled, device=self._device)
+                     use_grad=self._grad_enabled, device=self.device)
 
         def _backward():
             # According to calculations done in PyTorch, there are two formulas to calculate the grad of a matmul
@@ -314,7 +328,7 @@ class Tensor(np.ndarray):
 
     def log(self):
         out = Tensor(data=np.log(np.asarray(self.data)), _children=(self,), _op='log', use_grad=self._grad_enabled,
-                     device=self._device)
+                     device=self.device)
 
         def _backward():
             self.grad += (1 / self) * out.grad  # d/dx ln(x) = 1/x
