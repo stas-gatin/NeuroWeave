@@ -113,6 +113,13 @@ Implementación de la clase del Tensor y todos sus métodos. Esta clase es esenc
 <table>
 <tr>
     <td align="center">
+        <a href="https://github.com/itprosta">
+            <img src="https://avatars.githubusercontent.com/u/81316740?v=4" width="100;" alt="itprosta"/>
+            <br />
+            <sub><b>ITPROSTA</b></sub>
+        </a>
+    </td>
+    <td align="center">
         <a href="https://github.com/Shillianne">
             <img src="https://avatars.githubusercontent.com/u/148450883?v=4" width="100;" alt="Shillianne"/>
             <br />
