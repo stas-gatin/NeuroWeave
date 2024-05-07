@@ -1,7 +1,6 @@
 import h5py
 import logging
 
-# Configuring logging (if you choose to log events within this function)
 logging.basicConfig(level=logging.INFO)
 
 
