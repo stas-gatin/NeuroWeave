@@ -1,4 +1,5 @@
 import cupy as cp
+from typing import Any
 
 
 class CUDADeviceCountError(Exception):
@@ -42,12 +43,19 @@ class Device:
         else:
             raise CUDADeviceCountError(f"Referred to a CUDA device that doesn't exist: CUDA:{loc}")
 
-    def __eq__(self, other: "Device" | str):
+    def __eq__(self, other: Any) -> bool:
         assert isinstance(other, (Device, str)), 'Cannot compare with classes other than Device or str.'
         if isinstance(other, Device):
             return str(self) == str(other)
-        s, _ = str(self).split(':')
-        return s.lower() == other.lower()
+        s, *num1 = str(self).split(':')
+        o, *num2 = str(other).split(':')
+        v1 = s.lower() == o.lower()
+        try: num1.remove('0')
+        except ValueError: pass
+        try: num2.remove('0')
+        except ValueError: pass
+        v2 = True if (num1 and num2) or (not num1 and not num2) else False
+        return v1 and v2
 
     def __str__(self):
         if isinstance(self._loc, str):
