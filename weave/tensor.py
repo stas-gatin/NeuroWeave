@@ -3,7 +3,9 @@ import numpy as np
 import ctypes
 import re
 import cupy as cp
-from weave.tensor import Device
+
+import weave.cuda
+from weave.cuda import Device
 
 
 class Tensor(np.ndarray):
@@ -17,7 +19,7 @@ class Tensor(np.ndarray):
     [NOTE]: this class is not yet finished, but most of its features are already implemented.
     """
     def __new__(cls, shape=None, dtype=None, buffer=None, offset=0, strides=None, order=None, data=None,
-                _children=(), _op=None, use_grad: bool = False, device: str = 'cpu'):
+                _children=(), _op=None, use_grad: bool = False, device: str | weave.cuda.Device = 'cpu'):
         # We check whether there is a shape provided or we have to infer it from the data
         if shape is None and data is not None:
             array = np.asarray(data)
@@ -29,8 +31,8 @@ class Tensor(np.ndarray):
         return super().__new__(cls, shape, dtype, buffer, offset, strides, order)
 
     def __init__(self, shape=None, dtype=float, buffer=None, offset=0, strides=None, data=None,
-                 _children=(), _op=None, use_grad: bool = False, device: str = 'cpu'):
-        self.device = Device(device)
+                 _children=(), _op=None, use_grad: bool = False, device: str | weave.cuda.Device = 'cpu'):
+        self.device = Device(device) if isinstance(device, str) else device
         self._data = data
         if data is not None:
             self._populate(data)  # If data was provided, we populate the tensor making use of NumPy's API
@@ -410,12 +412,13 @@ class Tensor(np.ndarray):
         s = f'Tensor({data_string}, dtype={self.dtype}' if not self._grad_enabled else f'Tensor({data_string}, ' \
                                                                                         f'dtype={self.dtype}, ' \
                                                                                         f'uses_grad={self._grad_enabled}'
-        if self._device != 'cpu':
-            s += f', device={self._device}'
+        if self.device != 'cpu':
+            s += f', device={self.device}'
         s += ')'
         return s
 
 
 if __name__ == '__main__':
-    t1 = Tensor(data=[[1, 2, 9], [3, 4, 8], [5, 6, 7]])
-    print(t1.__repr__())
+    t1 = Tensor(data=[[1, 2, 9], [3, 4, 8], [5, 6, 7]], device='cuda')
+    t2 = Tensor(data=[[9, 8, 7], [6, 5, 4], [3, 2, 1]], device='cuda')
+    print(t1 @ t2)
