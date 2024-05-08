@@ -16,6 +16,7 @@ def empty(shape, dtype: str = None):
     return Tensor(data=array, dtype=dtype)
 
 
+
 def full(shape, fill_value=None, dtype: str = np.inf):
     array = np.full(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype)
