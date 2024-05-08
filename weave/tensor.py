@@ -3,7 +3,6 @@ import numpy as np
 import ctypes
 import re
 import cupy as cp
-
 import weave.cuda
 from weave.cuda import Device
 
@@ -282,7 +281,7 @@ class Tensor(np.ndarray):
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(np.asarray(self.data) @ np.asarray(other.data)), _children=(self, other), _op='@',
+        out = Tensor(data=(self.data @ other.data), _children=(self, other), _op='@',
                      use_grad=self._grad_enabled, device=self.device)
 
         def _backward():
@@ -348,7 +347,7 @@ class Tensor(np.ndarray):
         elif self.device == 'cuda':
             return cp.asarray(self._data)
         else:
-            return self._data
+            return np.asarray(self._data)
 
     @data.setter
     def data(self, value):
