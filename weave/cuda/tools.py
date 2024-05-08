@@ -42,6 +42,13 @@ class Device:
         else:
             raise CUDADeviceCountError(f"Referred to a CUDA device that doesn't exist: CUDA:{loc}")
 
+    def __eq__(self, other: "Device" | str):
+        assert isinstance(other, (Device, str)), 'Cannot compare with classes other than Device or str.'
+        if isinstance(other, Device):
+            return str(self) == str(other)
+        s, _ = str(self).split(':')
+        return s.lower() == other.lower()
+
     def __str__(self):
         if isinstance(self._loc, str):
             return 'CPU'
