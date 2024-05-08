@@ -363,7 +363,7 @@ class Tensor(np.ndarray):
     def __repr__(self):
         # Display the Tensors in a way that is consistent to how NumPy, PyTorch, Tensorflow and the such do.
         data_string = np.asarray(self.data, dtype=self.dtype).__repr__()
-        data_string = re.sub(r',\s\[', ',\n       [', data_string)
+        data_string = re.sub(r'  ,\s\[', ',\n       [', data_string)
         data_string = data_string[6:-1].rsplit('\n') if 'array' in data_string else data_string.rsplit('\n')
         data_string = [data_string[0]] + [' ' + line for line in data_string[1:]]
         data_string = '\n'.join(data_string)
