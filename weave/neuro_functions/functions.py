@@ -1,6 +1,9 @@
 import numpy as np
 from weave import Tensor
 
+__all__ = [
+    'zeros',
+]
 
 def ones():
     pass
