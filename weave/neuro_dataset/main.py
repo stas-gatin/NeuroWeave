@@ -6,7 +6,14 @@ __all__ = [
 ]
 
 class Dataset:
-    def __init__(self, path, file_type='csv', sep=',', delimiter=',', quotechar='"'):
+    def __init__(
+            self,
+            path,
+            file_type='csv',
+            sep=',',
+            delimiter=',',
+            quotechar='"'
+    ):
         self._path = path
         self._file_type = file_type
         self._sep = sep
@@ -25,7 +32,13 @@ class Dataset:
     def drop(self):
         pass
 
-    def train_test_split(self, x: list, y: str, test_size=0.2, seed=1):
+    def train_test_split(
+            self,
+            x: list,
+            y: str,
+            test_size=0.2,
+            seed=1
+    ):
         x = self._data[x[::]].values
         y = self._data[y].values
 
