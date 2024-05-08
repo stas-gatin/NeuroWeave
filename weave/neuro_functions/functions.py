@@ -21,7 +21,9 @@ def full(shape: int = None, fill_value=None, dtype: str = np.inf):
     array = np.full(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype)
 
-
+def rand(shape, dtype=None, use_grad: bool = False, device:str = 'cpu'):
+    array = np.random.rand(shape, dtype)
+    return Tensor(data=array, dtype=dtype)
 
 
 def zeros(shape, dtype: str = None, use_grad: bool = False, device:str = 'cpu'):
