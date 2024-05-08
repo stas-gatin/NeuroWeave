@@ -5,17 +5,13 @@ __all__ = [
     'zeros',
 ]
 
-
 def ones(shape, dtype: str = None):
     array = np.ones(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype)
 
-
 def empty(shape, dtype: str = None):
     array = np.empty(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype)
-
-
 
 def full(shape, fill_value=None, dtype: str = np.inf):
     array = np.full(shape, dtype=dtype)
@@ -24,7 +20,6 @@ def full(shape, fill_value=None, dtype: str = np.inf):
 def rand(shape, dtype=None, use_grad: bool = False, device:str = 'cpu'):
     array = np.random.rand(shape, dtype)
     return Tensor(data=array, dtype=dtype)
-
 
 def zeros(shape, dtype=None, use_grad: bool = False, device:str = 'cpu'):
     array = np.zeros(shape, dtype=dtype)
