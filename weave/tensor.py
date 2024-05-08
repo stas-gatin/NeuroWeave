@@ -4,7 +4,6 @@ import ctypes
 import re
 import cupy as cp
 import weave.cuda
-from weave.cuda import Device
 
 
 class Tensor(np.ndarray):
@@ -31,7 +30,7 @@ class Tensor(np.ndarray):
 
     def __init__(self, shape=None, dtype=float, buffer=None, offset=0, strides=None, data=None,
                  _children=(), _op=None, use_grad: bool = False, device: str | weave.cuda.Device = 'cpu'):
-        self.device = Device(device) if isinstance(device, str) else device
+        self.device = weave.cuda.Device(device) if isinstance(device, str) else device
         self._data: Any
         self.data = data
         if data is not None:
@@ -63,7 +62,7 @@ class Tensor(np.ndarray):
 
             def _backward():
                 # backward pass for addition operations
-                self.grad += Tensor(data=out.grad)
+                self.grad += Tensor(data=out.grad, device=self.device)
 
             if self._grad_enabled:  # only include backward function if the grad is enabled
                 out._backward = _backward
@@ -79,8 +78,8 @@ class Tensor(np.ndarray):
 
         def _backward():
             # backward pass for addition operations (gradient flows toward the children)
-            self.grad += Tensor(data=out.grad)
-            other.grad += Tensor(data=out.grad)
+            self.grad += Tensor(data=out.grad, device=self.device)
+            other.grad += Tensor(data=out.grad, device=other.device)
 
         if self._grad_enabled:
             out._backward = _backward
@@ -125,7 +124,7 @@ class Tensor(np.ndarray):
 
             def _backward():
                 # backward pass using the chain rule for multiplication
-                self.grad += other * Tensor(data=out.grad)
+                self.grad += other * out.grad
 
             if self._grad_enabled:
                 out._backward = _backward
@@ -140,8 +139,12 @@ class Tensor(np.ndarray):
 
         def _backward():
             # backward pass using the chain rule for multiplication
-            self.grad += Tensor(data=other.data) * Tensor(data=out.grad)
-            other.grad += Tensor(data=self.data) * Tensor(data=out.grad)
+            self._grad_enabled = False
+            other._grad_enabled = False
+            self.grad += other * out.grad
+            other.grad += self * out.grad
+            self._grad_enabled = True
+            other._grad_enabled = True
 
         if self._grad_enabled:
             out._backward = _backward
@@ -170,7 +173,9 @@ class Tensor(np.ndarray):
 
             def _backward():
                 # backward pass making use of the derivative of a power (d/dx x**2 = 2*x)
-                self.grad += other * Tensor(data=self.data, device=self.device) ** (other - 1) * out.grad
+                self._grad_enabled = False
+                self.grad += other * self ** (other - 1) * out.grad
+                self._grad_enabled = True
 
             if self._grad_enabled:
                 out._backward = _backward
@@ -184,9 +189,13 @@ class Tensor(np.ndarray):
                      device=self.device)
 
         def _backward():
+            self._grad_enabled = False
+            other._grad_enabled = False
             # backward pass making use of the partial derivative of powers
             self.grad += other * self ** (other - 1) * out.grad  # d/dx x**y = y*x**(y - 1)
             other.grad += (self ** other) * self.log() * out.grad  # d/dy x**y = (x**y) * ln(x)
+            self._grad_enabled = True
+            other._grad_enabled = True
 
         if self._grad_enabled:
             out._backward = _backward
@@ -202,7 +211,9 @@ class Tensor(np.ndarray):
 
             def _backward():
                 # since this is n**x (n a number), we use d/dx n**x = (n**x) * ln(n)
-                self.grad += Tensor(data=((other ** self.data) * np.log(other))) * out.grad
+                self._grad_enabled = False
+                self.grad += (other ** self) * np.log(other) * out.grad
+                self._grad_enabled = True
 
             if self._grad_enabled:
                 out._backward = _backward
@@ -234,9 +245,13 @@ class Tensor(np.ndarray):
                      device=self.device)
 
         def _backward():
+            self._grad_enabled = False
+            other._grad_enabled = False
             # We use the partial derivatives for the division of variables
             self.grad += out.grad / other  # d/dx x/y = 1/y
             other.grad += -((self / other ** 2) * out.grad)  # d/dy x/y = x/(y**2)
+            self._grad_enabled = True
+            other._grad_enabled = True
 
         if self._grad_enabled:
             out._backward = _backward
@@ -330,7 +345,9 @@ class Tensor(np.ndarray):
                      device=self.device)
 
         def _backward():
+            self._grad_enabled = False
             self.grad += (1 / Tensor(data=self.data, device=self.device)) * out.grad  # d/dx ln(x) = 1/x
+            self._grad_enabled = True
 
         if self._grad_enabled:
             out._backward = _backward
@@ -369,16 +386,18 @@ class Tensor(np.ndarray):
                 topo.append(t)
 
         build_topo(self)
-        # [print(t) for t in reversed(topo)]
+        [print(t) for t in reversed(topo)]
         self.grad = (Tensor(self.shape, device=self.device) * 0) + 1  # We set the first tensor's gradient to 1
         for node in reversed(topo):
             node._backward()  # Run the backwards function of all tensors in reverse
 
     def cpu(self):
-        self.data = np.asarray(self.data)
+        if self.device != 'cpu':
+            self.data = self.data.get()
 
     def cuda(self):
-        self.data = cp.asarray(self.data)
+        if self.device == 'cpu':
+            self.data = cp.asarray(self.data)
 
     def __getitem__(self, idx):
         s = np.asarray(self.data)
@@ -425,7 +444,7 @@ if __name__ == '__main__':
     b = Tensor(data=[[5, 6], [7, 8]], dtype=float, use_grad=True, device='cuda')
     c = Tensor(data=[[9, 8]], dtype=float, use_grad=True, device='cuda')
     d = Tensor(data=[[3], [8]], dtype=float, use_grad=True, device='cuda')
-    e = a ** b
+    e = a - b
     f = c @ e
     g = f @ d
     print(g)
