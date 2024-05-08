@@ -17,14 +17,14 @@ def empty(shape, dtype: str = None):
 
 
 
-def full(shape, fill_value=None, dtype: str = np.inf):
+def full(shape: int = None, fill_value=None, dtype: str = np.inf):
     array = np.full(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype)
 
 
 
 
-def zeros(shape, dtype=None, use_grad: bool = False, device:str = 'cpu'):
+def zeros(shape, dtype: str = None, use_grad: bool = False, device:str = 'cpu'):
     array = np.zeros(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype)
 
