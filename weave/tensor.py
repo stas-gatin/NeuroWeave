@@ -21,7 +21,7 @@ class Tensor(np.ndarray):
                 _children=(), _op=None, use_grad: bool = False, device: str | weave.cuda.Device = 'cpu'):
         # We check whether there is a shape provided or we have to infer it from the data
         if shape is None and data is not None:
-            array = np.asarray(data)
+            array = data.get() if isinstance(data, cp.ndarray) else np.asarray(data)
             shape = array.shape
             if dtype is None:
                 dtype = array.dtype
@@ -32,7 +32,8 @@ class Tensor(np.ndarray):
     def __init__(self, shape=None, dtype=float, buffer=None, offset=0, strides=None, data=None,
                  _children=(), _op=None, use_grad: bool = False, device: str | weave.cuda.Device = 'cpu'):
         self.device = Device(device) if isinstance(device, str) else device
-        self._data = data
+        self._data: Any
+        self.data = data
         if data is not None:
             self._populate(data)  # If data was provided, we populate the tensor making use of NumPy's API
         self.grad = 0
@@ -49,21 +50,15 @@ class Tensor(np.ndarray):
         pass
 
     def _populate(self, data):
-        if isinstance(data, (np.ndarray, int, float)):
-            self.data = data
-        elif isinstance(data, Tensor):
-            self.data = data.data
-        elif isinstance(data, (list, tuple)):
-            self.data = np.asarray(data, dtype=self.dtype)
-        else:
+        if not isinstance(data, (np.ndarray, int, float, cp.ndarray, Tensor, list)):
             raise TypeError(f'Invalid data type for Tensor: {data.__class__.__name__}')
-        self[...] = data
+        self[...] = data.get() if isinstance(data, cp.ndarray) else data
 
     def __add__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:  # transform organized data structures into Tensors
-            other = Tensor(data=other, use_grad=self._grad_enabled)
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):  # separated addition for integers and floats
-            out = Tensor(data=(np.asarray(self.data) + other), _children=(self,), _op='+', use_grad=self._grad_enabled,
+            out = Tensor(data=(self.data + other), _children=(self,), _op='+', use_grad=self._grad_enabled,
                          device=self.device)
 
             def _backward():
@@ -79,8 +74,8 @@ class Tensor(np.ndarray):
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: '\
                                             f'{self.device} and {other.device}.'
         # We relay on NumPy to handle the actual arithmetic operations
-        out = Tensor(data=(np.asarray(self.data) + np.asarray(other.data)), _children=(self, other), _op='+',
-                     use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=(self.data + other.data), _children=(self, other), _op='+', use_grad=self._grad_enabled,
+                     device=self.device)
 
         def _backward():
             # backward pass for addition operations (gradient flows toward the children)
@@ -123,9 +118,9 @@ class Tensor(np.ndarray):
 
     def __mul__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
-            other = Tensor(data=other, use_grad=self._grad_enabled)
+            other = Tensor(data=other, use_grad=self._grad_enabled ,device=self.device)
         elif isinstance(other, (int, float)):  # specialized output for mul of Tensor and a number
-            out = Tensor(data=(np.asarray(self.data) * other), _children=(self,), _op='*', use_grad=self._grad_enabled,
+            out = Tensor(data=(self.data * other), _children=(self,), _op='*', use_grad=self._grad_enabled,
                          device=self.device)
 
             def _backward():
@@ -140,8 +135,8 @@ class Tensor(np.ndarray):
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(np.asarray(self.data) * np.asarray(other.data)), _children=(self, other), _op='*',
-                     use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=(self.data * other.data), _children=(self, other), _op='*', use_grad=self._grad_enabled,
+                     device=self.device)
 
         def _backward():
             # backward pass using the chain rule for multiplication
@@ -166,14 +161,16 @@ class Tensor(np.ndarray):
 
     def __pow__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
-            other = Tensor(data=other, use_grad=self._grad_enabled)
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):
-            out = Tensor(data=(np.asarray(self.data, dtype=float) ** other), _children=(self,), _op='**',
-                         use_grad=self._grad_enabled, device=self.device)
+            this = self.data
+            this.dtype = float
+            out = Tensor(data=(this ** other), _children=(self,), _op='**', use_grad=self._grad_enabled,
+                         device=self.device)
 
             def _backward():
                 # backward pass making use of the derivative of a power (d/dx x**2 = 2*x)
-                self.grad += other * Tensor(data=self.data) ** (other - 1) * out.grad
+                self.grad += other * Tensor(data=self.data, device=self.device) ** (other - 1) * out.grad
 
             if self._grad_enabled:
                 out._backward = _backward
@@ -183,12 +180,12 @@ class Tensor(np.ndarray):
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(np.asarray(self.data) ** np.asarray(other.data)), _children=(self, other), _op='**',
-                     use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=(self.data ** other.data), _children=(self, other), _op='**', use_grad=self._grad_enabled,
+                     device=self.device)
 
         def _backward():
             # backward pass making use of the partial derivative of powers
-            self.grad += other * Tensor(data=self.data) ** (other - 1) * out.grad  # d/dx x**y = y*x**(y - 1)
+            self.grad += other * self ** (other - 1) * out.grad  # d/dx x**y = y*x**(y - 1)
             other.grad += (self ** other) * self.log() * out.grad  # d/dy x**y = (x**y) * ln(x)
 
         if self._grad_enabled:
@@ -198,14 +195,14 @@ class Tensor(np.ndarray):
     def __rpow__(self, other: Any) -> "Tensor":
         # We have to use different calculations since 2**x != x**2
         if type(other) in [np.ndarray, list]:
-            return Tensor(data=other, use_grad=self._grad_enabled) ** self
+            return Tensor(data=other, use_grad=self._grad_enabled, device=self.device) ** self
         elif isinstance(other, (int, float)):
-            out = Tensor(data=(other ** np.asarray(self.data)), _children=(self,), _op='**',
-                         use_grad=self._grad_enabled, device=self.device)
+            out = Tensor(data=(other ** self.data), _children=(self,), _op='**', use_grad=self._grad_enabled,
+                         device=self.device)
 
             def _backward():
                 # since this is n**x (n a number), we use d/dx n**x = (n**x) * ln(n)
-                self.grad += Tensor(data=((other ** np.asarray(self.data)) * np.log(other))) * out.grad
+                self.grad += Tensor(data=((other ** self.data) * np.log(other))) * out.grad
 
             if self._grad_enabled:
                 out._backward = _backward
@@ -225,7 +222,7 @@ class Tensor(np.ndarray):
 
     def __truediv__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
-            other = Tensor(data=other, use_grad=self._grad_enabled)
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):  # for numbers, we invert them and multiply instead of dividing
             return self * (other ** -1)
         elif not isinstance(other, Tensor):
@@ -233,8 +230,8 @@ class Tensor(np.ndarray):
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(np.asarray(self.data) / np.asarray(other.data)), _children=(self, other), _op='/',
-                     use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=(self.data / other.data), _children=(self, other), _op='/', use_grad=self._grad_enabled,
+                     device=self.device)
 
         def _backward():
             # We use the partial derivatives for the division of variables
@@ -247,7 +244,7 @@ class Tensor(np.ndarray):
 
     def __rtruediv__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
-            other = Tensor(data=other, use_grad=self._grad_enabled)
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
             return other / self
         elif isinstance(other, (int, float)):
             return (self ** -1) * other
@@ -275,14 +272,14 @@ class Tensor(np.ndarray):
     def __matmul__(self, other: Any) -> "Tensor":
         # Usual matrix multiplication for tensors
         if type(other) in [np.ndarray, list]:
-            other = Tensor(data=other, use_grad=self._grad_enabled)
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif not isinstance(other, Tensor):  # don't allow multiplication with scalars
             raise TypeError(f"Cannot multiply 'Tensor' and {type(other)}")
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(self.data @ other.data), _children=(self, other), _op='@',
-                     use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=(self.data @ other.data), _children=(self, other), _op='@', use_grad=self._grad_enabled,
+                     device=self.device)
 
         def _backward():
             # According to calculations done in PyTorch, there are two formulas to calculate the grad of a matmul
@@ -299,14 +296,14 @@ class Tensor(np.ndarray):
                 try:
                     # 1.
                     if jump: raise ValueError
-                    res = np.asarray(out.grad) @ np.asarray(following.data).T
+                    res = out.grad.data @ following.data.T
                     assert res.shape == current.shape, 'Error1'
-                    current.grad += Tensor(data=res)
+                    current.grad += Tensor(data=res, device=out.device)
                     jump = True
                 except (ValueError, AssertionError):
                     # 2.
-                    res = np.asarray(following.data).T @ np.asarray(out.grad)
-                    current.grad += Tensor(data=res)
+                    res = following.data.T @ out.grad.data
+                    current.grad += Tensor(data=res, device=out.device)
 
         if self._grad_enabled:
             out._backward = _backward
@@ -314,7 +311,7 @@ class Tensor(np.ndarray):
 
     def __rmatmul__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
-            other = Tensor(data=other, use_grad=self._grad_enabled)
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
             return other @ self
         else:
             raise TypeError(f"Cannot multiply 'Tensor' and {type(other)}.")
@@ -329,29 +326,33 @@ class Tensor(np.ndarray):
         return self
 
     def log(self):
-        out = Tensor(data=np.log(np.asarray(self.data)), _children=(self,), _op='log', use_grad=self._grad_enabled,
+        out = Tensor(data=np.log(self.data), _children=(self,), _op='log', use_grad=self._grad_enabled,
                      device=self.device)
 
         def _backward():
-            self.grad += (1 / self) * out.grad  # d/dx ln(x) = 1/x
+            self.grad += (1 / Tensor(data=self.data, device=self.device)) * out.grad  # d/dx ln(x) = 1/x
 
         if self._grad_enabled:
             out._backward = _backward
         return out
 
     @property
-    def data(self):
+    def data(self) -> np.ndarray | cp.ndarray:
         # We have to reset the 'data' property since NumPy already makes use of it
-        if self._data is None:
-            return np.asarray(self)
-        elif self.device == 'cuda':
-            return cp.asarray(self._data)
-        else:
-            return np.asarray(self._data)
+        return self._data
 
     @data.setter
     def data(self, value):
-        self._data = value
+        if self.device == 'cpu':
+            if value is None:
+                self._data = np.asarray(self)
+            else:
+                self._data = value.get() if isinstance(value, cp.ndarray) else np.asarray(value)
+        else:
+            if value is None:
+                self._data = cp.asarray(self)
+            else:
+                self._data = value if isinstance(value, cp.ndarray) else cp.asarray(value)
 
     def backward(self):
         # Backpropagation algorithm to traverse the operation graph that we have built with each mathematical operation
@@ -368,8 +369,8 @@ class Tensor(np.ndarray):
                 topo.append(t)
 
         build_topo(self)
-
-        self.grad = (Tensor(self.shape) * 0) + 1  # We set the first tensor's gradient to 1
+        # [print(t) for t in reversed(topo)]
+        self.grad = (Tensor(self.shape, device=self.device) * 0) + 1  # We set the first tensor's gradient to 1
         for node in reversed(topo):
             node._backward()  # Run the backwards function of all tensors in reverse
 
@@ -395,7 +396,8 @@ class Tensor(np.ndarray):
             raise TypeError(f"Invalid index type: {type(idx)}")
 
     def __str__(self):
-        data_string = np.asarray(self.data, dtype=self.dtype).__repr__()
+        info = self.data.get() if isinstance(self.data, cp.ndarray) else self.data
+        data_string = np.asarray(info, dtype=self.dtype).__repr__()
         data_string = data_string[6:-1].rsplit('\n') if 'array' in data_string else data_string.rsplit('\n')
         data_string = [data_string[0]] + [' ' + line.strip() for line in data_string[1:]]
         data_string = '\n'.join(data_string)
@@ -403,7 +405,8 @@ class Tensor(np.ndarray):
 
     def __repr__(self):
         # Display the Tensors in a way that is consistent to how NumPy, PyTorch, Tensorflow and the such do.
-        data_string = np.asarray(self.data, dtype=self.dtype).__repr__()
+        info = self.data.get() if isinstance(self.data, cp.ndarray) else self.data
+        data_string = np.asarray(info, dtype=self.dtype).__repr__()
         data_string = re.sub(r',\s\[', ',\n       [', data_string)
         data_string = data_string[6:-1].rsplit('\n') if 'array' in data_string else data_string.rsplit('\n')
         data_string = [data_string[0]] + [' ' + line for line in data_string[1:]]
@@ -418,6 +421,19 @@ class Tensor(np.ndarray):
 
 
 if __name__ == '__main__':
-    t1 = Tensor(data=[[1, 2, 9], [3, 4, 8], [5, 6, 7]], device='cuda')
-    t2 = Tensor(data=[[9, 8, 7], [6, 5, 4], [3, 2, 1]], device='cuda')
-    print(t1 @ t2)
+    a = Tensor(data=[[1, 2], [3, 4]], dtype=float, use_grad=True, device='cuda')
+    b = Tensor(data=[[5, 6], [7, 8]], dtype=float, use_grad=True, device='cuda')
+    c = Tensor(data=[[9, 8]], dtype=float, use_grad=True, device='cuda')
+    d = Tensor(data=[[3], [8]], dtype=float, use_grad=True, device='cuda')
+    e = a ** b
+    f = c @ e
+    g = f @ d
+    print(g)
+    g.backward()
+    print(g.grad.__repr__())
+    print(d.grad.__repr__())
+    print(f.grad.__repr__())
+    print(c.grad.__repr__())
+    print(e.grad.__repr__())
+    print(a.grad.__repr__())
+    print(b.grad.__repr__())
