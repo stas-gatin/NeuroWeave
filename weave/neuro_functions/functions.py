@@ -13,7 +13,7 @@ __all__ = [
     'rand',
     'eye',
     'linspace',
-    'arange'
+    'arange',
 ]
 
 
@@ -65,3 +65,19 @@ def rand(*shape,
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
+def eye(rows, columns=None, k=0, dtype=None,
+        use_grad: bool = False, device: str = 'cpu'):
+    array = np.eye(rows, columns, k, dtype=dtype)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+
+
+def linspace(start, stop, num, dtype=None,
+    use_grad: bool = False, device: str = 'cpu'):
+    array = np.linspace(start, stop,num,dtype=dtype)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+
+
+def arange(start_, stop_, step, dtype=None,
+           use_grad: bool = False, device: str = 'cpu'):
+    array = np.arange(start_, stop_, step, dtype=dtype)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
