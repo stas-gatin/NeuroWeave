@@ -3,6 +3,7 @@ import numpy as np
 import ctypes
 import re
 import cupy as cp
+from weave.tensor import Device
 
 
 class Tensor(np.ndarray):
@@ -29,7 +30,7 @@ class Tensor(np.ndarray):
 
     def __init__(self, shape=None, dtype=float, buffer=None, offset=0, strides=None, data=None,
                  _children=(), _op=None, use_grad: bool = False, device: str = 'cpu'):
-        self.device = device
+        self.device = Device(device)
         self._data = data
         if data is not None:
             self._populate(data)  # If data was provided, we populate the tensor making use of NumPy's API
@@ -342,7 +343,7 @@ class Tensor(np.ndarray):
         # We have to reset the 'data' property since NumPy already makes use of it
         if self._data is None:
             return np.asarray(self)
-        elif self.device is 'cuda':
+        elif self.device == 'cuda':
             return cp.asarray(self._data)
         else:
             return self._data
