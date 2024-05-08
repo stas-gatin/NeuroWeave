@@ -47,90 +47,100 @@ __all__ = [
 ]
 
 
-def ones(shape, dtype: str = None,
-         use_grad: bool = False, device: str = 'cpu'):
+def ones(shape: int | tuple, dtype: str = None,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.ones(shape, dtype=dtype)
+    print(type(shape))
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def ones_like(tensor_like, dtype: str = None, shape=None,
-              use_grad: bool = False, device: str = 'cpu'):
+def ones_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
+              use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.ones_like(a=tensor_like.data, dtype=dtype, shape=shape)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def empty(shape, dtype: str = None,
-          use_grad: bool = False, device: str = 'cpu'):
+def empty(shape: int | tuple, dtype: str = None,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.empty(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def full(shape, fill_value=np.inf, dtype=None,
-         use_grad: bool = False, device: str = 'cpu'):
+def full(shape: int | tuple, fill_value=np.inf, dtype: str = None,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.full(shape, fill_value=fill_value, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def full_like(tensor_like, fill_value=np.inf, dtype: str = None, shape=None,
-              use_grad: bool = False, device: str = 'cpu'):
+def full_like(tensor_like: Tensor, shape: int | tuple, fill_value=np.inf, dtype: str = None,
+              use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.full_like(a=tensor_like.data, fill_value=fill_value, dtype=dtype, shape=shape)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def zeros(shape, dtype: str = None,
-          use_grad: bool = False, device: str = 'cpu'):
+def zeros(shape: int | tuple, dtype: str = None,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.zeros(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def zeros_like(tensor_like, dtype: str = None, shape=None,
-               use_grad: bool = False, device: str = 'cpu'):
+def zeros_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
+               use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.zeros_like(a=tensor_like.data, dtype=dtype, shape=shape)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def rand(*shape,
-         use_grad: bool = False, device: str = 'cpu'):
+def rand(*shape: int | tuple,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    print(type(shape))
     array = np.random.rand(*shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def eye(rows, columns=None, k=0, dtype=None,
-        use_grad: bool = False, device: str = 'cpu'):
+def eye(rows: int = None, columns: int = None, k: int = 0, dtype: str = None,
+        use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.eye(rows, columns, k, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def linspace(start, stop, num, dtype=None,
-             use_grad: bool = False, device: str = 'cpu'):
+def linspace(start, stop, num, dtype: str = None,
+             use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.linspace(start, stop, num, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def arange(start_, stop_, step, dtype=None,
-           use_grad: bool = False, device: str = 'cpu'):
+def arange(start_, stop_, step, dtype: str = None,
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.arange(start_, stop_, step, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def tensor(data, dtype=None, use_grad: bool = False, device: str = 'cpu'):
+def tensor(data: list, dtype: str = None, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     return Tensor(data=data, dtype=dtype, use_grad=use_grad)
 
 
-def diag(tensor_like, k=0, use_grad: bool = False, device: str = 'cpu'):
+def diag(tensor_like: Tensor, k: int = 0,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.diag(tensor_like.data, k)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def tril(tensor_like, k=0, use_grad: bool = False, device: str = 'cpu'):
+def tril(tensor_like: Tensor, k: int = 0,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
     array = np.tril(tensor_like.data, k)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def triu(tensor_like, k=0, use_grad: bool = False, device: str = 'cpu'):
+def triu(tensor_like: Tensor, k: int = 0,
+         use_grad: bool = False, device: str = 'cpu')  -> Tensor:
     array = np.triu(tensor_like.data, k)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def concatenate(tensors: tuple = None, axis=0, dtype=None, device: str = 'cpu'):
-    pass
+def concatenate(tensors: tuple = None, axis: int = 0, dtype: str = None,
+                use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    tensors_data = []
+    for tensor_data in tensors:
+        tensors_data.append(tensor_data.data)
+    array = np.concatenate(tensors_data, axis=axis, dtype=dtype)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
