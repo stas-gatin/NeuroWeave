@@ -29,6 +29,7 @@ class Tensor(np.ndarray):
 
     def __init__(self, shape=None, dtype=float, buffer=None, offset=0, strides=None, data=None,
                  _children=(), _op=None, use_grad: bool = False, device: str = 'cpu'):
+        self.device = device
         self._data = data
         if data is not None:
             self._populate(data)  # If data was provided, we populate the tensor making use of NumPy's API
@@ -40,7 +41,6 @@ class Tensor(np.ndarray):
         self._prev = set(id(child) for child in _children)
         self._op = _op
         self._grad_enabled = use_grad
-        self.device = device
 
     def __array_finalize__(self, obj):
         # We just make use of NumPy's API, but we have to adapt it in order to get a Tensor object
@@ -342,6 +342,8 @@ class Tensor(np.ndarray):
         # We have to reset the 'data' property since NumPy already makes use of it
         if self._data is None:
             return np.asarray(self)
+        elif self.device is 'cuda':
+            return cp.asarray(self._data)
         else:
             return self._data
 
