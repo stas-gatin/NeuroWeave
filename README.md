@@ -76,7 +76,7 @@ weave.saver(model, file_path='path/to/save', overwrite=False)
 ```mermaid
 graph TD;
     weave(Weave)-->neuro_storage(Neuro Storage);
-    weave-->glimpse(Glimpse);
+    weave-->neuro_dataset(Neuro Dataset);
     weave-->optim(Optimization);
     weave-->random(Neuro Functions);
     weave-->nn(Neural Network);
@@ -88,9 +88,9 @@ graph TD;
     classDef done fill:#000,stroke:#00ff00,stroke-width:2px;
     classDef not_done fill:#000,stroke:#ff0000,stroke-width:2px;
 
-    class weave,nn,modules,network,random in_process;
+    class weave,nn,modules,network,random,neuro_dataset in_process;
     class neuro_storage,saver,loader done;
-    class glimpse,optim not_done;
+    class optim not_done;
 
 ```
 
