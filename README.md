@@ -78,7 +78,7 @@ graph TD;
     weave(Weave)-->neuro_storage(Neuro Storage);
     weave-->glimpse(Glimpse);
     weave-->optim(Optimization);
-    weave-->random(Random);
+    weave-->random(Neuro Functions);
     weave-->nn(Neural Network);
     nn-->modules(Modules);
     neuro_storage-->saver(Saver);
@@ -88,9 +88,9 @@ graph TD;
     classDef done fill:#000,stroke:#00ff00,stroke-width:2px;
     classDef not_done fill:#000,stroke:#ff0000,stroke-width:2px;
 
-    class weave,nn,modules,network in_process;
+    class weave,nn,modules,network, random in_process;
     class neuro_storage,saver,loader done;
-    class glimpse,optim,random not_done;
+    class glimpse,optim not_done;
 
 ```
 
