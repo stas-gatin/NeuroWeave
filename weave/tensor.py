@@ -49,7 +49,7 @@ class Tensor(np.ndarray):
         pass
 
     def _populate(self, data):
-        if not isinstance(data, (np.ndarray, int, float, cp.ndarray, Tensor, list)):
+        if not isinstance(data, (np.ndarray, int, float, cp.ndarray, Tensor, list, np.int64)):
             raise TypeError(f'Invalid data type for Tensor: {data.__class__.__name__}')
         self[...] = data.get() if isinstance(data, cp.ndarray) else data
 
@@ -166,9 +166,7 @@ class Tensor(np.ndarray):
         if type(other) in [np.ndarray, list]:
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):
-            this = self.data
-            this.dtype = float
-            out = Tensor(data=(this ** other), _children=(self,), _op='**', use_grad=self._grad_enabled,
+            out = Tensor(data=(self.data ** other), _children=(self,), _op='**', use_grad=self._grad_enabled,
                          device=self.device)
 
             def _backward():
@@ -367,7 +365,8 @@ class Tensor(np.ndarray):
                 self._data = value.get() if isinstance(value, cp.ndarray) else np.asarray(value)
         else:
             if value is None:
-                self._data = cp.asarray(self)
+                # cupy tends to make arrays of nan in some cases, so we have to fix for it
+                self._data = cp.nan_to_num(cp.asarray(self))
             else:
                 self._data = value if isinstance(value, cp.ndarray) else cp.asarray(value)
 
@@ -386,7 +385,7 @@ class Tensor(np.ndarray):
                 topo.append(t)
 
         build_topo(self)
-        [print(t) for t in reversed(topo)]
+        # [print(t) for t in reversed(topo)]
         self.grad = (Tensor(self.shape, device=self.device) * 0) + 1  # We set the first tensor's gradient to 1
         for node in reversed(topo):
             node._backward()  # Run the backwards function of all tensors in reverse
@@ -394,10 +393,113 @@ class Tensor(np.ndarray):
     def cpu(self):
         if self.device != 'cpu':
             self.data = self.data.get()
+            self.device = weave.cuda.Device('cpu')
 
     def cuda(self):
         if self.device == 'cpu':
             self.data = cp.asarray(self.data)
+            self.device = weave.cuda.Device('cuda')
+
+    def astype(
+        self,
+        dtype,
+        order=...,
+        casting=...,
+        subok=...,
+        copy=...,
+    ):
+        self.data = self.data.astype(dtype)
+
+    def all(
+        self,
+        axis=...,
+        out=...,
+        keepdims=...,
+        *,
+        where=...,
+    ):
+        if self.device == 'cpu':
+            return self.data.all()
+        raise NotImplementedError('Cannot perform this operation on tensors on the GPU.')
+
+    def any(
+        self,
+        axis=...,
+        out=...,
+        keepdims=...,
+        *,
+        where=...,
+    ):
+        if self.device == 'cpu':
+            return self.data.any()
+        raise NotImplementedError('Cannot perform this operation on tensors on the GPU.')
+
+    def sort(
+        self,
+        axis=...,
+        kind=...,
+        order=...,
+    ):
+        self.data = self.data.sort(axis, kind, order)
+
+    def argmax(
+        self,
+        axis=...,
+        out=...,
+        *,
+        keepdims=...,
+    ):
+        return Tensor(data=self.data.argmax(), dtype=int, device=self.device)
+
+    def argmin(
+        self,
+        axis = ...,
+        out = ...,
+        *,
+        keepdims = ...,
+    ):
+        return Tensor(data=self.data.argmin(), dtype=int, device=self.device)
+
+    def argsort(
+        self,
+        axis = ...,
+        kind = ...,
+        order = ...,
+    ):
+        return Tensor(data=self.data.argsort(), device=self.device)
+
+    def argpartition(
+        self,
+        kth,
+        axis = ...,
+        kind = ...,
+        order = ...,
+    ):
+        if self.device == 'cpu':
+            return Tensor(data=self.data.argpartition(kth), device=self.device)
+        raise NotImplementedError('Cannot perform this operation on tensors on the GPU.')
+
+    def byteswap(self, inplace = ...):
+        if self.device == 'cpu':
+            return Tensor(data=self.data.byteswap(), device=self.device)
+        raise NotImplementedError('Cannot perform this operation on tensors on the GPU.')
+
+    def choose(
+        self,
+        choices,
+        out = ...,
+        mode = ...,
+    ):
+        raise NotImplementedError('This operation is not implemented for the Tensor class.')
+
+    def clip(
+        self,
+        min = int | None,
+        max = int | None,
+        out = None,
+        **kwargs,
+    ):
+        return Tensor(data=self.data.clip(min, max, out, **kwargs), device=self.device)
 
     def __getitem__(self, idx):
         s = np.asarray(self.data)
@@ -420,6 +522,7 @@ class Tensor(np.ndarray):
         data_string = data_string[6:-1].rsplit('\n') if 'array' in data_string else data_string.rsplit('\n')
         data_string = [data_string[0]] + [' ' + line.strip() for line in data_string[1:]]
         data_string = '\n'.join(data_string)
+        data_string = re.sub(r', dtype=\w+$', '', data_string)
         return data_string
 
     def __repr__(self):
@@ -440,19 +543,5 @@ class Tensor(np.ndarray):
 
 
 if __name__ == '__main__':
-    a = Tensor(data=[[1, 2], [3, 4]], dtype=float, use_grad=True, device='cuda')
-    b = Tensor(data=[[5, 6], [7, 8]], dtype=float, use_grad=True, device='cuda')
-    c = Tensor(data=[[9, 8]], dtype=float, use_grad=True, device='cuda')
-    d = Tensor(data=[[3], [8]], dtype=float, use_grad=True, device='cuda')
-    e = a - b
-    f = c @ e
-    g = f @ d
-    print(g)
-    g.backward()
-    print(g.grad.__repr__())
-    print(d.grad.__repr__())
-    print(f.grad.__repr__())
-    print(c.grad.__repr__())
-    print(e.grad.__repr__())
-    print(a.grad.__repr__())
-    print(b.grad.__repr__())
+    a = Tensor(data=[[1, 2], [3, 4]], dtype=float, use_grad=True, device='cpu')
+    print(a.clip(0))
