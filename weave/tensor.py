@@ -494,12 +494,20 @@ class Tensor(np.ndarray):
 
     def clip(
         self,
-        min = int | None,
-        max = int | None,
+        min: int | None = None,
+        max: int | None = None,
         out = None,
         **kwargs,
     ):
         return Tensor(data=self.data.clip(min, max, out, **kwargs), device=self.device)
+
+    def compress(
+        self,
+        a,
+        axis = None,
+        out = None,
+    ):
+        return Tensor(data=self.data.compress(a, axis, out), device=self.device)
 
     def __getitem__(self, idx):
         s = np.asarray(self.data)
@@ -543,5 +551,5 @@ class Tensor(np.ndarray):
 
 
 if __name__ == '__main__':
-    a = Tensor(data=[[1, 2], [3, 4]], dtype=float, use_grad=True, device='cpu')
-    print(a.clip(0))
+    a = Tensor(data=[[1, 2], [3, 4]], dtype=float, use_grad=True, device='cuda')
+    print(a.compress([1, 1]))
