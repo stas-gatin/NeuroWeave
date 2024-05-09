@@ -88,7 +88,7 @@ graph TD;
     classDef done fill:#000,stroke:#00ff00,stroke-width:2px;
     classDef not_done fill:#000,stroke:#ff0000,stroke-width:2px;
 
-    class weave,nn,modules,network, random in_process;
+    class weave,nn,modules,network,random in_process;
     class neuro_storage,saver,loader done;
     class glimpse,optim not_done;
 
