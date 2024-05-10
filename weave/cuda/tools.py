@@ -1,5 +1,5 @@
-import cupy as cp
 from typing import Any
+import cupy as cp
 
 
 class CUDADeviceCountError(Exception):
