@@ -198,6 +198,13 @@ def concatenate(tensors: tuple = None, axis: int = 0, dtype: str = None,
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def stack():
+def stack(tensors: tuple = None, axis: int = 0, dtype: str = None,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Join a sequence of arrays along a new axis."""
+
+    tensors_data = []
+    for tensor_data in tensors:
+        tensors_data.append(tensor_data.data)
+    array = np.stack(tensors_data, axis=axis, dtype=dtype)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
     pass
