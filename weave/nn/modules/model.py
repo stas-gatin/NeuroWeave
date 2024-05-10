@@ -49,7 +49,7 @@ class Model(metaclass=ModelMeta):   # Model is a layer with layers inside (como 
 
     # Load values from a trained model
     @classmethod
-    def load(cls, val   ues: dict, *args):
+    def load(cls, values: dict, *args):
         name = values['config']['name']
         m = cls(*args)  # classmethod is empty
 
