@@ -12,3 +12,4 @@ test_model = {
 }
 
 weave.save_model(test_model, 'my_model.h5', overwrite=True)
+weave.rand()
