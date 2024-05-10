@@ -60,6 +60,8 @@ __all__ = [
     'triu',
     'concatenate',
     'stack',
+    'load',
+    'save'
 ]
 
 
@@ -168,62 +170,75 @@ def arange(start_, stop_, step, dtype: str = None,
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def dot(a,b, use_grad: bool = False, device: str = 'cpu'):
+def dot(a,b, dtype: str = None, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Dot product of two arrays."""
+
     array = np.dot(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def matmul(a,b, use_grad: bool = False, device: str = 'cpu'):
+def matmul(a,b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Matrix product of two arrays."""
     array = np.matmul(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def inner(a,b, use_grad: bool = False, device: str = 'cpu'):
+def inner(a,b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Inner product of two arrays."""
     array = np.inner(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def outer(a,b, use_grad: bool = False, device: str = 'cpu'):
+def outer(a,b, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Compute the outer product of two vectors."""
     array = np.outer(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def tensordot(a,b, use_grad: bool = False, device: str = 'cpu'):
+def tensordot(a,b, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Compute tensor dot product along specified axes for arrays >= 1-D."""
     array = np.tensordot(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def einsum(subscripts, *operands, use_grad: bool = False, device: str = 'cpu'):
+def einsum(subscripts, *operands, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Evaluates the Einstein summation convention on the operands."""
     array = np.einsum(subscripts, *operands)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None, use_grad: bool = False, device: str = 'cpu'):
+def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Return the sum along diagonals of the array."""
     array = np.trace(a, offset, axis1, axis2, dtype, out)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def norm(x, ord=None, axis=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
+def norm(x, ord=None, axis=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Matrix or vector norm."""
     array = np.linalg.norm(x, ord, axis, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def inv(a, use_grad: bool = False, device: str = 'cpu'):
+def inv(a, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Compute the (multiplicative) inverse of a matrix."""
     array = np.linalg.inv(a)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def tensorinv(a, ind=2, use_grad: bool = False, device: str = 'cpu'):
+def tensorinv(a, ind=2, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Compute the 'inverse' of an N-dimensional array."""
     array = np.linalg.tensorinv(a, ind)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def all(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
+def all(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Test whether all array elements along a given axis evaluate to True."""
     array = np.all(x, axis, out, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
+def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+    """Test whether any array element along a given axis evaluates to True."""
     array = np.any(x, axis, out, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
@@ -280,3 +295,14 @@ def stack(tensors: tuple = None, axis: int = 0, dtype: str = None,
     array = np.stack(tensors_data, axis=axis, dtype=dtype)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
     pass
+
+
+def load(filename: str, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Load a tensor from a file."""
+    array = np.load(filename)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def save(filename: str, tensor: Tensor, use_grad: bool = False, device: str = 'cpu') -> None:
+    """Save a tensor to a file."""
+    np.save(filename, tensor.data)
