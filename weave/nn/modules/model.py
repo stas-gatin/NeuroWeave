@@ -1,5 +1,4 @@
 from weave import Tensor
-from numpy import prod
 
 
 class ModelMeta(type):
@@ -31,7 +30,7 @@ class Model(metaclass=ModelMeta):
             else:
                 if isinstance(value, Tensor):
                     self._parameters[attr] = value
-                    self._num_parameters += prod(value.shape)
+                    self._num_parameters += value.size
                 elif isinstance(value, Model):
                     self._models[attr] = value
         for layer in self._models.values():
