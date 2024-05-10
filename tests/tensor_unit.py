@@ -5,6 +5,8 @@ t1 = Tensor(data=[[1, 1, 1], [2, 2, 2]])
 t2 = Tensor(data=[[1, 1, 1], [2, 2, 2]])
 
 print(t1+t2)
+print(t1+4)
+print(t1 + ([[1, 1, 1], [2, 2, 2]]))
 
 matrix = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 print("Матрица:")
