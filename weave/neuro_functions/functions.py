@@ -1,3 +1,31 @@
+"""
+MIT License
+
+Copyright (c) 2024 NeuroWeave
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Please note that this is an extension for the Numpy library.
+For detailed information, refer to the official documentation
+at https://numpy.org/doc/.
+"""
+
 import numpy as np
 
 from weave import Tensor
@@ -25,174 +53,230 @@ __all__ = [
     'inv',
     'tensorinv',
     'all',
-    'any'
-
+    'any',
+    'tensor',
+    'diag',
+    'tril',
+    'triu',
+    'concatenate',
+    'stack',
 ]
 
-# functions for creating tensors
 
+def ones(shape: int | tuple, dtype: str = None,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return a new array of given shape and type, filled with ones."""
 
-# this function creates a tensor filled with ones
-def ones(shape, dtype: str = None,
-         use_grad: bool = False, device: str = 'cpu'):
     array = np.ones(shape, dtype=dtype)
+    print(type(shape))
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function creates a tensor filled with ones with the same shape as the input tensor
-def ones_like(tensor, dtype: str = None, shape=None,
-         use_grad: bool = False, device: str = 'cpu'):
-    array = np.ones_like(a=tensor.data, dtype=dtype, shape=shape)
+def ones_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
+              use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return an array of ones with the same shape and type as a given array."""
+
+    array = np.ones_like(a=tensor_like.data, dtype=dtype, shape=shape)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function creates a tensor filled with empty values
-def empty(shape, dtype: str = None,
-          use_grad: bool = False, device: str = 'cpu'):
+def empty(shape: int | tuple, dtype: str = None,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return a new array of given shape and type, without initializing entries."""
+
     array = np.empty(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function creates a tensor filled with a specific value
-def full(shape, fill_value=np.inf, dtype=None,
-         use_grad: bool = False, device: str = 'cpu'):
+def full(shape: int | tuple, fill_value=np.inf, dtype: str = None,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return a new array of given shape and type, filled with fill_value."""
+
     array = np.full(shape, fill_value=fill_value, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function creates a tensor filled with a specific value with the same shape as the input tensor
-def full_like(tensor, fill_value=np.inf, dtype: str = None, shape=None,
-         use_grad: bool = False, device: str = 'cpu'):
-    array = np.full_like(a=tensor.data, fill_value=fill_value, dtype=dtype, shape=shape)
+def full_like(tensor_like: Tensor, shape: int | tuple, fill_value=np.inf,
+              dtype: str = None,
+              use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return a full array with the same shape and type as a given array."""
+
+    array = np.full_like(a=tensor_like.data, fill_value=fill_value, dtype=dtype,
+                         shape=shape)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function creates a tensor filled with zeros
-def zeros(shape, dtype: str = None,
-          use_grad: bool = False, device: str = 'cpu'):
+def zeros(shape: int | tuple, dtype: str = None,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return a new array of given shape and type, filled with zeros."""
+
     array = np.zeros(shape, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function creates a tensor filled with zeros with the same shape as the input tensor
-def zeros_like(tensor, dtype: str = None, shape=None,
-         use_grad: bool = False, device: str = 'cpu'):
-    array = np.zeros_like(a=tensor.data, dtype=dtype, shape=shape)
+def zeros_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
+               use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return an array of zeros with the same shape and type as a given array."""
+
+    array = np.zeros_like(a=tensor_like.data, dtype=dtype, shape=shape)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function creates a tensor filled with random values
-def rand(*shape,
-         use_grad: bool = False, device: str = 'cpu'):
+def rand(*shape: int | tuple,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Random values in a given shape."""
+
     array = np.random.rand(*shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function creates a tensor  with ones on the diagonal and zeros elsewhere
-def eye(rows, columns=None, k=0, dtype=None,
-        use_grad: bool = False, device: str = 'cpu'):
+def eye(rows: int = None, columns: int = None, k: int = 0, dtype: str = None,
+        use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return a 2-D array with ones on the diagonal and zeros elsewhere."""
+
     array = np.eye(rows, columns, k, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function creates a tensor with evenly spaced values with careful handling of endpoints.
-def linspace(start, stop, num, dtype=None,
-    use_grad: bool = False, device: str = 'cpu'):
-    array = np.linspace(start, stop,num,dtype=dtype)
+def linspace(start, stop, num, dtype: str = None,
+             use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """
+    Return evenly spaced numbers over a specified interval.
+
+    Returns num evenly spaced samples, calculated over the interval [start, stop].
+
+    The endpoint of the interval can optionally be excluded.
+    """
+
+    array = np.linspace(start, stop, num, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# this function is similar to linspace, but uses a step size (instead of the number of samples).
-def arange(start_, stop_, step, dtype=None,
-           use_grad: bool = False, device: str = 'cpu'):
+def arange(start_, stop_, step, dtype: str = None,
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """
+    Return evenly spaced values within a given interval.
+
+    arange can be called with a varying number of positional arguments:
+
+    arange(stop): Values are generated within the half-open interval [0, stop) (in other words, the interval including start but excluding stop).
+    arange(start, stop): Values are generated within the half-open interval [start, stop).
+    arange(start, stop, step) Values are generated within the half-open interval [start, stop), with spacing between values given by step.
+    """
+
     array = np.arange(start_, stop_, step, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-# functions for tensor operations
-# this function computes the dot product of two arrays
 def dot(a,b, use_grad: bool = False, device: str = 'cpu'):
     array = np.dot(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the matrix product of two arrays
 def matmul(a,b, use_grad: bool = False, device: str = 'cpu'):
     array = np.matmul(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the inner product of two arrays
 def inner(a,b, use_grad: bool = False, device: str = 'cpu'):
     array = np.inner(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the outer product of two arrays
 def outer(a,b, use_grad: bool = False, device: str = 'cpu'):
     array = np.outer(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the tensor dot product of two arrays
 def tensordot(a,b, use_grad: bool = False, device: str = 'cpu'):
     array = np.tensordot(a,b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the Einstein summation convention on the operands
 def einsum(subscripts, *operands, use_grad: bool = False, device: str = 'cpu'):
     array = np.einsum(subscripts, *operands)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the sum along the diagonal
 def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None, use_grad: bool = False, device: str = 'cpu'):
     array = np.trace(a, offset, axis1, axis2, dtype, out)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the norm of a tensor
 def norm(x, ord=None, axis=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
     array = np.linalg.norm(x, ord, axis, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the inverse of a n x n tensor
 def inv(a, use_grad: bool = False, device: str = 'cpu'):
     array = np.linalg.inv(a)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the inverse of a a multidimensional tensor
 def tensorinv(a, ind=2, use_grad: bool = False, device: str = 'cpu'):
     array = np.linalg.tensorinv(a, ind)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the logical AND of a tensor
 def all(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
     array = np.all(x, axis, out, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-# this function computes the logical OR of a tensor
 def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
     array = np.any(x, axis, out, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
+def tensor(data: list, dtype: str = None, use_grad: bool = False,
+           device: str = 'cpu') -> Tensor:
+    """Create an tensor from a data list."""
+
+    return Tensor(data=data, dtype=dtype, use_grad=use_grad)
 
 
+def diag(tensor_like: Tensor, k: int = 0,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Extract a diagonal or construct a diagonal array."""
+
+    array = np.diag(tensor_like.data, k)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
+def tril(tensor_like: Tensor, k: int = 0,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Lower triangle of an array."""
+
+    array = np.tril(tensor_like.data, k)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
+def triu(tensor_like: Tensor, k: int = 0,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """
+    Upper triangle of an array.
+    """
+    array = np.triu(tensor_like.data, k)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
+def concatenate(tensors: tuple = None, axis: int = 0, dtype: str = None,
+                use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Join a sequence of arrays along an existing axis."""
+    tensors_data = []
+    for tensor_data in tensors:
+        tensors_data.append(tensor_data.data)
+    array = np.concatenate(tensors_data, axis=axis, dtype=dtype)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
+def stack(tensors: tuple = None, axis: int = 0, dtype: str = None,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Join a sequence of arrays along a new axis."""
 
-
-
-
+    tensors_data = []
+    for tensor_data in tensors:
+        tensors_data.append(tensor_data.data)
+    array = np.stack(tensors_data, axis=axis, dtype=dtype)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    pass
