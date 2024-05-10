@@ -1,6 +1,11 @@
+import numpy as np
+
 from weave import neuro_functions
 
 import weave
 
+a = np.arange(9) - 4
 
-array=weave.arange
+b= weave.norm(a)
+
+print(b)
