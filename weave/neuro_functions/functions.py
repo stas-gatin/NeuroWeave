@@ -60,6 +60,8 @@ __all__ = [
     'triu',
     'concatenate',
     'stack',
+    'load',
+    'save'
 ]
 
 
@@ -293,3 +295,14 @@ def stack(tensors: tuple = None, axis: int = 0, dtype: str = None,
     array = np.stack(tensors_data, axis=axis, dtype=dtype)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
     pass
+
+
+def load(filename: str, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Load a tensor from a file."""
+    array = np.load(filename)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def save(filename: str, tensor: Tensor, use_grad: bool = False, device: str = 'cpu') -> None:
+    """Save a tensor to a file."""
+    np.save(filename, tensor.data)
