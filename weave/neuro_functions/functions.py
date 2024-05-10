@@ -42,6 +42,18 @@ __all__ = [
     'eye',
     'linspace',
     'arange',
+    'dot',
+    'matmul',
+    'inner',
+    'outer',
+    'tensordot',
+    'einsum',
+    'trace',
+    'norm',
+    'inv',
+    'tensorinv',
+    'all',
+    'any',
     'tensor',
     'diag',
     'tril',
@@ -154,6 +166,66 @@ def arange(start_, stop_, step, dtype: str = None,
 
     array = np.arange(start_, stop_, step, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+
+
+def dot(a,b, use_grad: bool = False, device: str = 'cpu'):
+    array = np.dot(a,b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def matmul(a,b, use_grad: bool = False, device: str = 'cpu'):
+    array = np.matmul(a,b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def inner(a,b, use_grad: bool = False, device: str = 'cpu'):
+    array = np.inner(a,b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def outer(a,b, use_grad: bool = False, device: str = 'cpu'):
+    array = np.outer(a,b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def tensordot(a,b, use_grad: bool = False, device: str = 'cpu'):
+    array = np.tensordot(a,b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def einsum(subscripts, *operands, use_grad: bool = False, device: str = 'cpu'):
+    array = np.einsum(subscripts, *operands)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None, use_grad: bool = False, device: str = 'cpu'):
+    array = np.trace(a, offset, axis1, axis2, dtype, out)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def norm(x, ord=None, axis=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
+    array = np.linalg.norm(x, ord, axis, keepdims)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def inv(a, use_grad: bool = False, device: str = 'cpu'):
+    array = np.linalg.inv(a)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def tensorinv(a, ind=2, use_grad: bool = False, device: str = 'cpu'):
+    array = np.linalg.tensorinv(a, ind)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def all(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
+    array = np.all(x, axis, out, keepdims)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+
+
+def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu'):
+    array = np.any(x, axis, out, keepdims)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
 def tensor(data: list, dtype: str = None, use_grad: bool = False,
