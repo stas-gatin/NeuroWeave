@@ -14,7 +14,7 @@ class ModelMeta(type):
         return super().__new__(cls, name, bases, attr)
 
 
-class Model(metaclass=ModelMeta):   # Model is a layer with layers inside (como una cebolla)
+class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like an onion)
     def __init__(self):
         pass
 
@@ -50,16 +50,19 @@ class Model(metaclass=ModelMeta):   # Model is a layer with layers inside (como 
     # Load values from a trained model
     @classmethod
     def load(cls, values: dict, *args):
-        name = values['config']['name']
         m = cls(*args)  # classmethod is empty
 
         def rec_fill(obj, weights):
+            obj._parameters = weights
+            obj._layers = {}
             for name, value in weights.items():
                 if isinstance(value, Tensor):
-                    val = getattr(m, name)  # getattr is a build-in function
-                    val = value
-                else:
+                    setattr(obj, name, value)
+                elif isinstance(value, dict):
+                    obj._layers[name] = getattr(obj, name)
                     rec_fill(getattr(obj, name), value)
+        rec_fill(m, values)
+        return m
 
     def __repr__(self) -> str:
         s = f'{self.__class__.__name__}('
@@ -75,3 +78,16 @@ class Model(metaclass=ModelMeta):   # Model is a layer with layers inside (como 
     def num_params(self):
         print(f'Number of tensors: {len(self._parameters)}')
         print(f'Number of parameters: {self._num_parameters}')
+
+    def _depth_call(self, op):
+        for name, value in self._parameters.items():
+            if isinstance(value, Tensor):
+                getattr(value, op)()
+            elif isinstance(value, dict):
+                getattr(self, name)._depth_call(op)
+
+    def cpu(self):
+        self._depth_call('cpu')
+
+    def cuda(self):
+        self._depth_call('cuda')

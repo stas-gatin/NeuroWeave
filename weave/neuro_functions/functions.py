@@ -110,12 +110,12 @@ def zeros_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def rand(*shape: int | tuple,
+def rand(shape: int | tuple,
          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Random values in a given shape."""
 
     array = np.random.rand(*shape)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def eye(rows: int = None, columns: int = None, k: int = 0, dtype: str = None,
