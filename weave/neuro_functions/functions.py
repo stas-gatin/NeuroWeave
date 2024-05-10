@@ -180,74 +180,80 @@ def arange(start_, stop_, step, dtype: str = None,
     return Tensor(data=array, dtype=dtype, use_grad=use_grad)
 
 
-def dot(a,b, dtype: str = None, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+def dot(a, b, dtype: str = None, use_grad: bool = False,
+        device: str = 'cpu') -> Tensor:
     """Dot product of two arrays."""
 
-    array = np.dot(a,b)
+    array = np.dot(a, b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def matmul(a,b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+def matmul(a, b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Matrix product of two arrays."""
-    array = np.matmul(a,b)
+    array = np.matmul(a, b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def inner(a,b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+def inner(a, b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Inner product of two arrays."""
-    array = np.inner(a,b)
+    array = np.inner(a, b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def outer(a,b, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def outer(a, b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Compute the outer product of two vectors."""
-    array = np.outer(a,b)
+    array = np.outer(a, b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def tensordot(a,b, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def tensordot(a, b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Compute tensor dot product along specified axes for arrays >= 1-D."""
-    array = np.tensordot(a,b)
+    array = np.tensordot(a, b)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def einsum(subscripts, *operands, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def einsum(subscripts, *operands, use_grad: bool = False,
+           device: str = 'cpu') -> Tensor:
     """Evaluates the Einstein summation convention on the operands."""
     array = np.einsum(subscripts, *operands)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Return the sum along diagonals of the array."""
     array = np.trace(a, offset, axis1, axis2, dtype, out)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def norm(x, ord=None, axis=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def norm(x, ord=None, axis=None, keepdims=False, use_grad: bool = False,
+         device: str = 'cpu') -> Tensor:
     """Matrix or vector norm."""
     array = np.linalg.norm(x, ord, axis, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def inv(a, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def inv(a, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Compute the (multiplicative) inverse of a matrix."""
     array = np.linalg.inv(a)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def tensorinv(a, ind=2, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def tensorinv(a, ind=2, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Compute the 'inverse' of an N-dimensional array."""
     array = np.linalg.tensorinv(a, ind)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def all(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def all(x, axis=None, out=None, keepdims=False, use_grad: bool = False,
+        device: str = 'cpu') -> Tensor:
     """Test whether all array elements along a given axis evaluate to True."""
     array = np.all(x, axis, out, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False,
+        device: str = 'cpu') -> Tensor:
     """Test whether any array element along a given axis evaluates to True."""
     array = np.any(x, axis, out, keepdims)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
@@ -343,31 +349,35 @@ def split(ten: Tensor, indices_or_sections: int, axis: int = 0,
           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Split an array into multiple sub-arrays as views into ary."""
 
-    array = np.split(ary=np.array(ten.data), indices_or_sections=indices_or_sections, axis=axis)
+    array = np.split(ary=np.array(ten.data),
+                     indices_or_sections=indices_or_sections, axis=axis)
     return Tensor(data=array, use_grad=use_grad)
 
 
 def dsplit(ten: Tensor, indices_or_sections: int, axis: int = 0,
-          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Split array into multiple sub-arrays along the 3rd axis (depth)."""
 
-    array = np.dsplit(ary=np.array(ten.data), indices_or_sections=indices_or_sections)
+    array = np.dsplit(ary=np.array(ten.data),
+                      indices_or_sections=indices_or_sections)
     return Tensor(data=array, use_grad=use_grad)
 
 
 def vsplit(ten: Tensor, indices_or_sections: int, axis: int = 0,
-          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Split an array into multiple sub-arrays vertically (row-wise)."""
 
-    array = np.vsplit(ary=np.array(ten.data), indices_or_sections=indices_or_sections)
+    array = np.vsplit(ary=np.array(ten.data),
+                      indices_or_sections=indices_or_sections)
     return Tensor(data=array, use_grad=use_grad)
 
 
 def hsplit(ten: Tensor, indices_or_sections: int, axis: int = 0,
-          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Split an array into multiple sub-arrays horizontally (column-wise)."""
 
-    array = np.hsplit(ary=np.array(ten.data), indices_or_sections=indices_or_sections)
+    array = np.hsplit(ary=np.array(ten.data),
+                      indices_or_sections=indices_or_sections)
     return Tensor(data=array, use_grad=use_grad)
 
 
@@ -414,7 +424,7 @@ def unique(ten: Tensor, axis: int = None,
 
 
 def flip(ten: Tensor, axis: int = None,
-           use_grad: bool = False, device: str = 'cpu') -> Tensor:
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Reverse the order of elements in an array along the given axis.
 
     The shape of the array is preserved, but the elements are reordered."""
@@ -424,14 +434,14 @@ def flip(ten: Tensor, axis: int = None,
 
 
 def reshape(ten: Tensor, new_shape: int | tuple = None,
-           use_grad: bool = False, device: str = 'cpu') -> Tensor:
+            use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Gives a new shape to an array without changing its data."""
 
     array = np.reshape(a=ten.data, newshape=new_shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def rot90(ten: Tensor, k: int = None, axes = (0, 1),
+def rot90(ten: Tensor, k: int = None, axes=(0, 1),
           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Rotate an array by 90 degrees in the plane specified by axes."""
 
@@ -456,6 +466,7 @@ def load(filename: str, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
 
 
-def save(filename: str, tensor: Tensor, use_grad: bool = False, device: str = 'cpu') -> None:
+def save(filename: str, ten: Tensor, use_grad: bool = False,
+         device: str = 'cpu') -> None:
     """Save a tensor to a file."""
-    np.save(filename, tensor.data)
+    np.save(filename, ten.data)
