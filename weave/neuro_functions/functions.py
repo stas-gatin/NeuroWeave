@@ -81,7 +81,7 @@ def ones(shape: int | tuple, dtype: str = None,
 
     array = np.ones(shape, dtype=dtype)
     print(type(shape))
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def ones_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
@@ -89,7 +89,7 @@ def ones_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
     """Return an array of ones with the same shape and type as a given array."""
 
     array = np.ones_like(a=tensor_like.data, dtype=dtype, shape=shape)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def empty(shape: int | tuple, dtype: str = None,
@@ -97,7 +97,7 @@ def empty(shape: int | tuple, dtype: str = None,
     """Return a new array of given shape and type, without initializing entries."""
 
     array = np.empty(shape, dtype=dtype)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def full(shape: int | tuple, fill_value=np.inf, dtype: str = None,
@@ -105,7 +105,7 @@ def full(shape: int | tuple, fill_value=np.inf, dtype: str = None,
     """Return a new array of given shape and type, filled with fill_value."""
 
     array = np.full(shape, fill_value=fill_value, dtype=dtype)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def full_like(tensor_like: Tensor, shape: int | tuple, fill_value=np.inf,
@@ -115,7 +115,7 @@ def full_like(tensor_like: Tensor, shape: int | tuple, fill_value=np.inf,
 
     array = np.full_like(a=tensor_like.data, fill_value=fill_value, dtype=dtype,
                          shape=shape)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def zeros(shape: int | tuple, dtype: str = None,
@@ -123,7 +123,7 @@ def zeros(shape: int | tuple, dtype: str = None,
     """Return a new array of given shape and type, filled with zeros."""
 
     array = np.zeros(shape, dtype=dtype)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def zeros_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
@@ -131,7 +131,7 @@ def zeros_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
     """Return an array of zeros with the same shape and type as a given array."""
 
     array = np.zeros_like(a=tensor_like.data, dtype=dtype, shape=shape)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def rand(*shape: int | tuple,
@@ -139,7 +139,7 @@ def rand(*shape: int | tuple,
     """Random values in a given shape."""
 
     array = np.random.rand(*shape)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def eye(rows: int = None, columns: int = None, k: int = 0, dtype: str = None,
@@ -147,7 +147,7 @@ def eye(rows: int = None, columns: int = None, k: int = 0, dtype: str = None,
     """Return a 2-D array with ones on the diagonal and zeros elsewhere."""
 
     array = np.eye(rows, columns, k, dtype=dtype)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def linspace(start, stop, num, dtype: str = None,
@@ -161,7 +161,7 @@ def linspace(start, stop, num, dtype: str = None,
     """
 
     array = np.linspace(start, stop, num, dtype=dtype)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def arange(start_, stop_, step, dtype: str = None,
@@ -177,87 +177,93 @@ def arange(start_, stop_, step, dtype: str = None,
     """
 
     array = np.arange(start_, stop_, step, dtype=dtype)
-    return Tensor(data=array, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
-def dot(a,b, dtype: str = None, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+def dot(a, b, dtype: str = None, use_grad: bool = False,
+        device: str = 'cpu') -> Tensor:
     """Dot product of two arrays."""
 
-    array = np.dot(a,b)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    array = np.dot(a, b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def matmul(a,b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+def matmul(a, b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Matrix product of two arrays."""
-    array = np.matmul(a,b)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    array = np.matmul(a, b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def inner(a,b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+def inner(a, b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Inner product of two arrays."""
-    array = np.inner(a,b)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    array = np.inner(a, b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def outer(a,b, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def outer(a, b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Compute the outer product of two vectors."""
-    array = np.outer(a,b)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    array = np.outer(a, b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def tensordot(a,b, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def tensordot(a, b, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Compute tensor dot product along specified axes for arrays >= 1-D."""
-    array = np.tensordot(a,b)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    array = np.tensordot(a, b)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def einsum(subscripts, *operands, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def einsum(subscripts, *operands, use_grad: bool = False,
+           device: str = 'cpu') -> Tensor:
     """Evaluates the Einstein summation convention on the operands."""
     array = np.einsum(subscripts, *operands)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def trace(a, offset=0, axis1=0, axis2=1, dtype=None, out=None,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Return the sum along diagonals of the array."""
     array = np.trace(a, offset, axis1, axis2, dtype, out)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def norm(x, ord=None, axis=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def norm(x, ord=None, axis=None, keepdims=False, use_grad: bool = False,
+         device: str = 'cpu') -> Tensor:
     """Matrix or vector norm."""
     array = np.linalg.norm(x, ord, axis, keepdims)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def inv(a, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def inv(a, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Compute the (multiplicative) inverse of a matrix."""
     array = np.linalg.inv(a)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def tensorinv(a, ind=2, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def tensorinv(a, ind=2, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Compute the 'inverse' of an N-dimensional array."""
     array = np.linalg.tensorinv(a, ind)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def all(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def all(x, axis=None, out=None, keepdims=False, use_grad: bool = False,
+        device: str = 'cpu') -> Tensor:
     """Test whether all array elements along a given axis evaluate to True."""
     array = np.all(x, axis, out, keepdims)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False, device: str = 'cpu')-> Tensor:
+def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False,
+        device: str = 'cpu') -> Tensor:
     """Test whether any array element along a given axis evaluates to True."""
     array = np.any(x, axis, out, keepdims)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def tensor(data: list, dtype: str = None, use_grad: bool = False,
            device: str = 'cpu') -> Tensor:
     """Create an tensor from a data list."""
 
-    return Tensor(data=data, dtype=dtype, use_grad=use_grad)
+    return Tensor(data=data, dtype=dtype, use_grad=use_grad, device=device)
 
 
 def diag(tensor_like: Tensor, k: int = 0,
@@ -265,7 +271,7 @@ def diag(tensor_like: Tensor, k: int = 0,
     """Extract a diagonal or construct a diagonal array."""
 
     array = np.diag(tensor_like.data, k)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def tril(tensor_like: Tensor, k: int = 0,
@@ -273,7 +279,7 @@ def tril(tensor_like: Tensor, k: int = 0,
     """Lower triangle of an array."""
 
     array = np.tril(tensor_like.data, k)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def triu(tensor_like: Tensor, k: int = 0,
@@ -282,7 +288,7 @@ def triu(tensor_like: Tensor, k: int = 0,
     Upper triangle of an array.
     """
     array = np.triu(tensor_like.data, k)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def concatenate(tensors: tuple = None, axis: int = 0, dtype: str = None,
@@ -292,7 +298,7 @@ def concatenate(tensors: tuple = None, axis: int = 0, dtype: str = None,
     for tensor_data in tensors:
         tensors_data.append(tensor_data.data)
     array = np.concatenate(tensors_data, axis=axis, dtype=dtype)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def stack(tensors: tuple = None, axis: int = 0, dtype: str = None,
@@ -303,7 +309,7 @@ def stack(tensors: tuple = None, axis: int = 0, dtype: str = None,
     for tensor_data in tensors:
         tensors_data.append(tensor_data.data)
     array = np.stack(tensors_data, axis=axis, dtype=dtype)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def vstack(tensors: tuple = None, dtype: str = None,
@@ -314,7 +320,7 @@ def vstack(tensors: tuple = None, dtype: str = None,
     for tensor_data in tensors:
         tensors_data.append(tensor_data.data)
     array = np.vstack(tup=tensors_data, dtype=dtype)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def hstack(tensors: tuple = None, dtype: str = None,
@@ -325,7 +331,7 @@ def hstack(tensors: tuple = None, dtype: str = None,
     for tensor_data in tensors:
         tensors_data.append(tensor_data.data)
     array = np.hstack(tup=tensors_data, dtype=dtype)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def dstack(tensors: tuple = None,
@@ -336,39 +342,43 @@ def dstack(tensors: tuple = None,
     for tensor_data in tensors:
         tensors_data.append(tensor_data.data)
     array = np.dstack(tup=tensors_data)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def split(ten: Tensor, indices_or_sections: int, axis: int = 0,
           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Split an array into multiple sub-arrays as views into ary."""
 
-    array = np.split(ary=np.array(ten.data), indices_or_sections=indices_or_sections, axis=axis)
-    return Tensor(data=array, use_grad=use_grad)
+    array = np.split(ary=np.array(ten.data),
+                     indices_or_sections=indices_or_sections, axis=axis)
+    return Tensor(data=array, use_grad=use_grad, device=device)
 
 
 def dsplit(ten: Tensor, indices_or_sections: int, axis: int = 0,
-          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Split array into multiple sub-arrays along the 3rd axis (depth)."""
 
-    array = np.dsplit(ary=np.array(ten.data), indices_or_sections=indices_or_sections)
-    return Tensor(data=array, use_grad=use_grad)
+    array = np.dsplit(ary=np.array(ten.data),
+                      indices_or_sections=indices_or_sections)
+    return Tensor(data=array, use_grad=use_grad, device=device)
 
 
 def vsplit(ten: Tensor, indices_or_sections: int, axis: int = 0,
-          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Split an array into multiple sub-arrays vertically (row-wise)."""
 
-    array = np.vsplit(ary=np.array(ten.data), indices_or_sections=indices_or_sections)
-    return Tensor(data=array, use_grad=use_grad)
+    array = np.vsplit(ary=np.array(ten.data),
+                      indices_or_sections=indices_or_sections)
+    return Tensor(data=array, use_grad=use_grad, device=device)
 
 
 def hsplit(ten: Tensor, indices_or_sections: int, axis: int = 0,
-          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Split an array into multiple sub-arrays horizontally (column-wise)."""
 
-    array = np.hsplit(ary=np.array(ten.data), indices_or_sections=indices_or_sections)
-    return Tensor(data=array, use_grad=use_grad)
+    array = np.hsplit(ary=np.array(ten.data),
+                      indices_or_sections=indices_or_sections)
+    return Tensor(data=array, use_grad=use_grad, device=device)
 
 
 def delete(ten: Tensor, obj: slice | int, axis: int = 0,
@@ -380,7 +390,7 @@ def delete(ten: Tensor, obj: slice | int, axis: int = 0,
     """
 
     array = np.delete(arr=ten.data, obj=obj, axis=axis)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def append(ten: Tensor, values: Tensor, axis: int = None,
@@ -388,7 +398,7 @@ def append(ten: Tensor, values: Tensor, axis: int = None,
     """Append values to the end of an array."""
 
     array = np.append(arr=ten.data, values=values, axis=axis)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def resize(ten: Tensor, new_shape: int | tuple,
@@ -402,7 +412,7 @@ def resize(ten: Tensor, new_shape: int | tuple,
     """
 
     array = np.resize(a=ten.data, new_shape=new_shape)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def unique(ten: Tensor, axis: int = None,
@@ -410,33 +420,33 @@ def unique(ten: Tensor, axis: int = None,
     """Find the unique elements of an array."""
 
     array = np.unique(ar=ten.data, axis=axis)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def flip(ten: Tensor, axis: int = None,
-           use_grad: bool = False, device: str = 'cpu') -> Tensor:
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Reverse the order of elements in an array along the given axis.
 
     The shape of the array is preserved, but the elements are reordered."""
 
     array = np.flip(m=ten.data, axis=axis)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def reshape(ten: Tensor, new_shape: int | tuple = None,
-           use_grad: bool = False, device: str = 'cpu') -> Tensor:
+            use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Gives a new shape to an array without changing its data."""
 
     array = np.reshape(a=ten.data, newshape=new_shape)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def rot90(ten: Tensor, k: int = None, axes = (0, 1),
+def rot90(ten: Tensor, k: int = None, axes=(0, 1),
           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Rotate an array by 90 degrees in the plane specified by axes."""
 
     array = np.rot90(m=ten.data, k=k, axes=axes)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def block(tensors: Tensor,
@@ -447,15 +457,16 @@ def block(tensors: Tensor,
     for tensor_data in tensors:
         tensors_data.append(tensor_data.data)
     array = np.block(arrays=tensors_data)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 def load(filename: str, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Load a tensor from a file."""
     array = np.load(filename)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def save(filename: str, tensor: Tensor, use_grad: bool = False, device: str = 'cpu') -> None:
+def save(filename: str, ten: Tensor, use_grad: bool = False,
+         device: str = 'cpu') -> None:
     """Save a tensor to a file."""
-    np.save(filename, tensor.data)
+    np.save(filename, ten.data)
