@@ -1,4 +1,4 @@
 import weave
 
-model = weave.load_model('my_monkdel.h5')
+model = weave.load_model('my_model.h5')
 print(model)
