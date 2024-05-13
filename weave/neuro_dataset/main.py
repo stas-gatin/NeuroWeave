@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 
 __all__ = [
-    "Dataset"
+    "Dataset",
+    "StandardScaler",
 ]
+
 
 class Dataset:
     def __init__(
@@ -11,19 +13,18 @@ class Dataset:
             path,
             file_type='csv',
             sep=',',
-            delimiter=',',
             quotechar='"'
     ):
         self._path = path
         self._file_type = file_type
         self._sep = sep
-        self._delimiter = delimiter
         self._quotechar = quotechar
         self._data = self.load_dataset()
 
     def load_dataset(self) -> "Dataset":
         if self._file_type == 'csv':
-            self._data = pd.read_csv(self._path)#, sep=self._sep, delimiter=self._delimiter, quotechar=self._quotechar)
+            self._data = pd.read_csv(filepath_or_buffer=self._path,
+                                     sep=self._sep, quotechar=self._quotechar)
             return self._data
 
     def __getitem__(self, idx):
@@ -32,15 +33,16 @@ class Dataset:
     def drop(self):
         pass
 
+    @staticmethod
     def train_test_split(
-            self,
+            data: pd.DataFrame,
             x: list,
             y: str,
             test_size=0.2,
             seed=1
     ):
-        x = self._data[x[::]].values
-        y = self._data[y].values
+        x = data[x[::]].values
+        y = data[y].values
 
         # Checking for None values in x and y
         if np.any(pd.isnull(x)) or np.any(pd.isnull(y)):
@@ -62,7 +64,6 @@ class Dataset:
 
         return X_train, X_test, y_train, y_test
 
-
     @property
     def data(self):
         return self._data
@@ -70,16 +71,24 @@ class Dataset:
 
 class StandardScaler:
     def __init__(self):
-        self.means_ = None
-        self.stds_ = None
+        self.mean_ = None
+        self.std_ = None
 
-    def fit(self, X) -> None:
-        self.means_ = np.mean(X, axis=0)
-        self.stds_ = np.std(X, axis=0, ddof=0)
+    def fit(self, X):
+        """Calculates the mean and standard deviation of each feature."""
+        self.mean_ = X.mean(axis=0)
+        self.std_ = X.std(axis=0)
+        return self
 
-    def transform(self, X) -> list:
-        return (X - self.means_) / self.stds_
+    def transform(self, X):
+        """Applies normalization to features using the calculated
+            mean and standard deviation."""
+        return (X - self.mean_) / self.std_
 
-    def fit_transform(self, X) -> list:
-        self.fit(X)
-        return self.transform(X)
+    def fit_transform(self, X):
+        """Combines fit and transform into one method."""
+        return self.fit(X).transform(X)
+
+    def inverse_transform(self, X_scaled):
+        """Transforms normalized data back to the original scale."""
+        return X_scaled * self.std_ + self.mean_
