@@ -134,7 +134,7 @@ def zeros_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
     return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
-def rand(*shape: int | tuple,
+def rand(shape: int | tuple,
          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Random values in a given shape."""
 

@@ -406,14 +406,14 @@ class Tensor(np.ndarray):
             node._backward()  # Run the backwards function of all tensors in reverse
 
     def cpu(self):
-        if self.device != 'cpu':
-            self.data = self.data.get()
+        if not (self.device == 'cpu'):
             self.device = weave.cuda.Device('cpu')
+            self.data = self.data.get()
 
     def cuda(self):
         if self.device == 'cpu':
-            self.data = cp.asarray(self.data)
             self.device = weave.cuda.Device('cuda')
+            self.data = cp.asarray(self.data)
 
     # From this point onward, we implement many of the methods that a subclass from numpy.ndarray is expected to have.
     # Due to the sheer amount of methods, however, only some of them have been implemented, and these have been selected
