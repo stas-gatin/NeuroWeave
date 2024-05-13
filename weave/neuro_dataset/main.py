@@ -4,6 +4,7 @@ import numpy as np
 __all__ = [
     "Dataset",
     "StandardScaler",
+    "one_hot_encode",
 ]
 
 
@@ -87,8 +88,22 @@ class StandardScaler:
 
     def fit_transform(self, X):
         """Combines fit and transform into one method."""
-        return self.fit(X).transform(X)
+        return self.fit(X.data).transform(X.data)
 
     def inverse_transform(self, X_scaled):
         """Transforms normalized data back to the original scale."""
         return X_scaled * self.std_ + self.mean_
+
+
+def one_hot_encode(dataset, n_classes):
+    return pd.get_dummies(dataset.data[n_classes])
+
+
+
+class ColumnTransformer:
+    def __init__(self, transformers):
+        self.mean_ = None
+        self.std_ = None
+        self.dummies = None
+
+    def
