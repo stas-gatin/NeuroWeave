@@ -54,7 +54,33 @@ class Tanh(Model):
         super().__init__()
 
     def forward(self, x: Tensor) -> Tensor:
+        out = Tensor(data=((x.exp() - (-x).exp()) / (x.exp() + (-x).exp())), _children=(x,), _op='tanh',
+                     use_grad=x.grad_enabled, device=self.device)
+
+        def _backward():
+            x.grad += (1 - ((x.exp() - (-x).exp()) / (x.exp() + (-x).exp())) ** 2) * out.grad
+
+        if x.grad_enabled:
+            out._backward = _backward
+        return out
+
+    def __call__(self, x: Tensor) -> Tensor:
+        return self.forward(x)
+
+    def __repr__(self) -> str:
+        return 'Tanh()'
+
+
+class GeLU(Model):
+    def __init__(self):
+        super().__init__()
+        self.tanh = Tanh()
+
+    def forward(self, x: Tensor) -> Tensor:
         pass
 
     def __call__(self, x: Tensor) -> Tensor:
+        pass
+
+    def __repr__(self) -> str:
         pass
