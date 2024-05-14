@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from weave import Tensor
+from weave import Tensor, diag, outer, vstack
 from model import Model
 
 
@@ -166,14 +166,32 @@ class Gaussian(Model):
 
 
 class Softmax(Model):
-    def __init__(self):
+    def __init__(self, dim: int = None):
         super().__init__()
+        self.dim = 1 if dim is None else dim
 
     def forward(self, x: Tensor) -> Tensor:
-        pass
+        out = Tensor(data=(x.exp() / x.exp().sum(axis=self.dim).unsqueeze().T), _children=(x,), _op='softmax',
+                     use_grad=x.grad_enabled, device=self.device)
+
+        def _backward():
+            out._grad_enabled = False
+            if len(out.shape) > 1:
+                derivative = []
+                for i in range(out.shape[0]):
+                    d = out.grad @ (diag(out[i].squeeze()) - outer(out[i], out[i]))
+                    derivative.append(d[i])
+                x.grad += vstack(tuple(derivative))
+            else:
+                x.grad += out.grad @ (diag(out.squeeze()) - outer(out, out))
+            out._grad_enabled = True
+
+        if x.grad_enabled:
+            out._backward = _backward
+        return out
 
     def __call__(self, x: Tensor) -> Tensor:
-        pass
+        return self.forward(x)
 
     def __repr__(self) -> str:
-        pass
+        return 'Softmax()'

@@ -638,7 +638,7 @@ class Tensor(np.ndarray):
     def round(self, decimals=0, out=None):
         return Tensor(data=self.data.round(decimals, out), use_grad=self._grad_enabled, device=self.device)
 
-    def squeeze(self, axis=0):
+    def squeeze(self, axis=0) -> "Tensor":
         try:
             out = Tensor(data=self.data.squeeze(axis), use_grad=self._grad_enabled, device=self.device)
             if not isinstance(self.grad, int):
@@ -647,7 +647,7 @@ class Tensor(np.ndarray):
             out = self
         return out
 
-    def unsqueeze(self, axis=0):
+    def unsqueeze(self, axis=0) -> "Tensor":
         val = np.expand_dims(self.data, axis=axis) if isinstance(self.data, np.ndarray) else \
               cp.expand_dims(self.data, axis=axis)
         out = Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
@@ -661,7 +661,8 @@ class Tensor(np.ndarray):
         return self.data.std(axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims)
 
     def sum(self, axis=None, dtype=None, out=None, keepdims=False, initial=None, where=True):
-        return self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
+        val = self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
+        return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def take(self, indices, axis=None, out=None, mode='raise'):
         return Tensor(data=self.data.take(indices, axis=axis, out=out), use_grad=self._grad_enabled,
