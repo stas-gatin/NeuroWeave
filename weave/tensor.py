@@ -383,6 +383,69 @@ class Tensor(np.ndarray):
             out._backward = _backward
         return out
 
+    def __abs__(self):
+        if self.device == 'cpu':
+            out = Tensor(data=np.abs(self.data), _children=(self,), _op='abs', use_grad=self._grad_enabled,
+                         device=self.device)
+        else:
+            out = Tensor(data=cp.abs(self.data), _children=(self,), _op='abs', use_grad=self._grad_enabled,
+                         device=self.device)
+
+        def _backward():
+            self.grad += np.where(self > 0, 1, -1) * out.grad
+
+        if self._grad_enabled:
+            out._backward = _backward
+        return out
+
+    def __lt__(self, other: Any) -> "Tensor":
+        if type(other) in [np.ndarray, list]:
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
+        elif isinstance(other, (int, float)):
+            return Tensor(data=self.data < other, use_grad=self._grad_enabled, device=self.device)
+        elif not isinstance(other, Tensor):
+            raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
+        return Tensor(data=self.data < other.data, use_grad=self._grad_enabled, device=self.device)
+
+    def __le__(self, other: Any) -> "Tensor":
+        if type(other) in [np.ndarray, list]:
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
+        elif isinstance(other, (int, float)):
+            return Tensor(data=self.data <= other, use_grad=self._grad_enabled, device=self.device)
+        elif not isinstance(other, Tensor):
+            raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
+        return Tensor(data=self.data <= other.data, use_grad=self._grad_enabled, device=self.device)
+
+    def __gt__(self, other: Any) -> "Tensor":
+        if type(other) in [np.ndarray, list]:
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
+        elif isinstance(other, (int, float)):
+            return Tensor(data=self.data > other, use_grad=self._grad_enabled, device=self.device)
+        elif not isinstance(other, Tensor):
+            raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
+        return Tensor(data=self.data > other.data, use_grad=self._grad_enabled, device=self.device)
+
+    def __ge__(self, other: Any) -> "Tensor":
+        if type(other) in [np.ndarray, list]:
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
+        elif isinstance(other, (int, float)):
+            return Tensor(data=self.data >= other, use_grad=self._grad_enabled, device=self.device)
+        elif not isinstance(other, Tensor):
+            raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
+        return Tensor(data=self.data >= other.data, use_grad=self._grad_enabled, device=self.device)
+
+    def __eq__(self, other):
+        if type(other) in [np.ndarray, list]:
+            other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
+        elif isinstance(other, (int, float)):
+            return Tensor(data=self.data == other, use_grad=self._grad_enabled, device=self.device)
+        elif not isinstance(other, Tensor):
+            raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
+        return Tensor(data=self.data == other.data, use_grad=self._grad_enabled, device=self.device)
+
+    def exp(self):
+        return np.e ** self
+
     @property
     def data(self) -> Union[np.ndarray, 'cp.ndarray']:
         # We have to reset the 'data' property since NumPy already makes use of it
@@ -407,6 +470,10 @@ class Tensor(np.ndarray):
     def T(self):
         return self.transpose()
 
+    @property
+    def grad_enabled(self) -> bool:
+        return self._grad_enabled
+
     def backward(self):
         # Backpropagation algorithm to traverse the operation graph that we have built with each mathematical operation
         topo = []
@@ -427,14 +494,14 @@ class Tensor(np.ndarray):
             node._backward()  # Run the backwards function of all tensors in reverse
 
     def cpu(self):
-        if self.device != 'cpu':
-            self.data = self.data.get()
+        if not (self.device == 'cpu'):
             self.device = weave.cuda.Device('cpu')
+            self.data = self.data.get()
 
     def cuda(self):
         if self.device == 'cpu':
-            self.data = cp.asarray(self.data)
             self.device = weave.cuda.Device('cuda')
+            self.data = cp.asarray(self.data)
 
     # From this point onward, we implement many of the methods that a subclass from numpy.ndarray is expected to have.
     # Due to the sheer amount of methods, however, only some of them have been implemented, and these have been selected
@@ -442,6 +509,9 @@ class Tensor(np.ndarray):
     # Another thing to note is that some of the arguments or keyword arguments for the methods are left unused even when
     # they are still defined. This is to maintain compatibility with CuPy's array model as well as sticking to NumPy's
     # method naming conventions.
+
+    def abs(self):
+        return abs(self)
 
     def astype(self, dtype, order='K', casting='unsafe', subok=True, copy=True):
         self.data = self.data.astype(dtype, order, copy=copy)
@@ -589,7 +659,7 @@ class Tensor(np.ndarray):
     def round(self, decimals=0, out=None):
         return Tensor(data=self.data.round(decimals, out), use_grad=self._grad_enabled, device=self.device)
 
-    def squeeze(self, axis=0):
+    def squeeze(self, axis=0) -> "Tensor":
         try:
             out = Tensor(data=self.data.squeeze(axis), use_grad=self._grad_enabled, device=self.device)
             if not isinstance(self.grad, int):
@@ -598,7 +668,7 @@ class Tensor(np.ndarray):
             out = self
         return out
 
-    def unsqueeze(self, axis=0):
+    def unsqueeze(self, axis=0) -> "Tensor":
         val = np.expand_dims(self.data, axis=axis) if isinstance(self.data, np.ndarray) else \
               cp.expand_dims(self.data, axis=axis)
         out = Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
@@ -613,7 +683,7 @@ class Tensor(np.ndarray):
         return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def sum(self, axis=None, dtype=None, out=None, keepdims=False, initial=None, where=True):
-        val =  self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
+        val = self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
         return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def take(self, indices, axis=None, out=None, mode='raise'):
