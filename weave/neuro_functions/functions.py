@@ -27,7 +27,7 @@ at https://numpy.org/doc/.
 """
 
 import numpy as np
-
+import cupy as cp
 from weave import Tensor
 
 __all__ = [

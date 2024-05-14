@@ -1,4 +1,5 @@
 from weave import Tensor
+from weave.cuda import Device
 
 
 # We created the base class for all models as well as its metaclass to run functions in the background
@@ -15,7 +16,13 @@ class ModelMeta(type):
 
 
 class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like an onion)
-    def __init__(self):
+    def __init__(self, device: str | Device = 'cpu'):
+        self.device = Device(device)
+
+    def forward(self, x: Tensor) -> Tensor:
+        pass
+
+    def __call__(self, x: Tensor) -> Tensor:
         pass
 
     def _parameter_buffer(self):
@@ -87,7 +94,11 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
                 getattr(self, name)._depth_call(op)
 
     def cpu(self):
-        self._depth_call('cpu')
+        if self.device != 'cpu':
+            self.device = Device('cpu')
+            self._depth_call('cpu')
 
     def cuda(self):
-        self._depth_call('cuda')
+        if self.device == 'cpu':
+            self.device = Device('cuda')
+            self._depth_call('cuda')

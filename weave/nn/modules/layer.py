@@ -6,9 +6,9 @@ from weave import rand
 class LayerDense(Model):
     def __init__(self, in_neurons: int, out_neurons: int, bias: bool = True):
         super().__init__()
-        self._weights = rand((in_neurons, out_neurons), use_grad=True, device='cpu')  # tensor made of weights
+        self._weights = rand((in_neurons, out_neurons), use_grad=True, device=self.device)  # tensor made of weights
         if bias:
-            self._bias = rand((1, out_neurons), use_grad=True, device='cpu')
+            self._bias = rand((1, out_neurons), use_grad=True, device=self.device)
 
     def forward(self, inputs: Tensor) -> Tensor:
         if hasattr(self, '_bias'):
