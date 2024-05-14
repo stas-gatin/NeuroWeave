@@ -1,9 +1,10 @@
-from typing import Any
+from typing import Any, Union
 import numpy as np
 import ctypes
 import re
-import cupy as cp  # we still require CuPy for transformations
 import weave.cuda  # import cuda to allow Tensors to live on the GPU
+if weave.cuda.is_available():
+    import cupy as cp  # we still require CuPy for transformations
 
 
 class Tensor(np.ndarray):
@@ -26,11 +27,14 @@ class Tensor(np.ndarray):
         Tensor.cuda().
     """
     def __new__(cls, shape=None, dtype=None, buffer=None, offset=0, strides=None, order=None, data=None,
-                _children=(), _op=None, use_grad: bool = False, device: str | weave.cuda.Device = 'cpu'):
+                _children=(), _op=None, use_grad: bool = False, device: Union['weave.cuda.Device', str] = 'cpu'):
         # We check whether there is a shape provided or we have to infer it from the data
         if shape is None and data is not None:
             # Handle differences between data on the CPU and the GPU
-            array = data.get() if isinstance(data, cp.ndarray) else np.asarray(data)
+            if device == 'cpu' or 'cpu' in device:
+                array = np.asarray(data)
+            else:
+                array = data.get() if isinstance(data, cp.ndarray) else np.asarray(data)
             shape = array.shape
             if dtype is None:
                 dtype = array.dtype
@@ -38,8 +42,10 @@ class Tensor(np.ndarray):
             raise AttributeError('Either shape or data must be given when creating the array.')
         return super().__new__(cls, shape, dtype, buffer, offset, strides, order)
 
-    def __init__(self, shape=None, dtype=float, *, data=None, _children=(), _op=None, use_grad: bool = False,
-                 device: str | weave.cuda.Device = 'cpu'):
+    def __init__(self, shape=None, dtype=None, *, data=None, _children=(), _op=None, use_grad: bool = False,
+                 device: Union['weave.cuda.Device', str] = 'cpu'):
+        if use_grad is True and self.dtype not in [*weave._float_types, float]:
+            raise ValueError('Only Tensors with floating types support gradients.')
         self.device = weave.cuda.Device(device) if isinstance(device, str) else device  # assign the correct device
         self._data: Any
         self.data = data
@@ -59,10 +65,18 @@ class Tensor(np.ndarray):
         pass
 
     def _populate(self, data):
-        if not isinstance(data, (np.ndarray, int, float, cp.ndarray, Tensor, list, np.int64, np.int32)):
-            raise TypeError(f'Invalid data type for Tensor: {data.__class__.__name__}')
-        # By using ellipsis indexing, we can refer to all the dimensions of the Tensor
-        self[...] = data.get() if isinstance(data, cp.ndarray) else data
+        if self.device == 'cpu':
+            cpu_accepted_types = Union[np.ndarray, int, float, Tensor, list, *weave._types]
+            if not isinstance(data, cpu_accepted_types):
+                raise TypeError(f'Invalid data type for Tensor: {data.__class__.__name__}')
+            # By using ellipsis indexing, we can refer to all the dimensions of the Tensor
+            self[...] = data
+        else:
+            cuda_accepted_types = Union[np.ndarray, int, float, cp.ndarray, Tensor, list, *weave._types]
+            if not isinstance(data, cuda_accepted_types):
+                raise TypeError(f'Invalid data type for Tensor: {data.__class__.__name__}')
+            # By using ellipsis indexing, we can refer to all the dimensions of the Tensor
+            self[...] = data.get() if isinstance(data, cp.ndarray) else data
 
     def __add__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:  # transform organized data structures into Tensors
@@ -152,8 +166,10 @@ class Tensor(np.ndarray):
             # backward pass using the chain rule for multiplication
             self._grad_enabled = False
             other._grad_enabled = False
+
             self.grad += other * out.grad
             other.grad += self * out.grad
+
             self._grad_enabled = True
             other._grad_enabled = True
 
@@ -177,6 +193,8 @@ class Tensor(np.ndarray):
         if type(other) in [np.ndarray, list]:
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):
+            val = self.data
+            val.astype(float)
             out = Tensor(data=(self.data ** other), _children=(self,), _op='**', use_grad=self._grad_enabled,
                          device=self.device)
 
@@ -351,20 +369,22 @@ class Tensor(np.ndarray):
         return self
 
     def log(self):
-        out = Tensor(data=np.log(self.data), _children=(self,), _op='log', use_grad=self._grad_enabled,
-                     device=self.device)
+        if self.device == 'cpu':
+            out = Tensor(data=np.log(self.data), _children=(self,), _op='log', use_grad=self._grad_enabled,
+                         device=self.device)
+        else:
+            out = Tensor(data=cp.log(self.data), _children=(self,), _op='log', use_grad=self._grad_enabled,
+                         device=self.device)
 
         def _backward():
-            self._grad_enabled = False
             self.grad += (1 / Tensor(data=self.data, device=self.device)) * out.grad  # d/dx ln(x) = 1/x
-            self._grad_enabled = True
 
         if self._grad_enabled:
             out._backward = _backward
         return out
 
     @property
-    def data(self) -> np.ndarray | cp.ndarray:
+    def data(self) -> Union[np.ndarray, 'cp.ndarray']:
         # We have to reset the 'data' property since NumPy already makes use of it
         return self._data
 
@@ -374,13 +394,14 @@ class Tensor(np.ndarray):
             if value is None:
                 self._data = np.asarray(self)
             else:
-                self._data = value.get() if isinstance(value, cp.ndarray) else np.asarray(value)
+                types = Union[np.ndarray, list, *weave._types]
+                self._data = value.get() if not isinstance(value, types) else np.asarray(value, dtype=self.dtype)
         else:
             if value is None:
                 # cupy tends to make arrays of nan in some cases, so we have to fix for it
-                self._data = cp.nan_to_num(cp.asarray(self))
+                self._data = cp.nan_to_num(cp.asarray(self, dtype=self.dtype))
             else:
-                self._data = value if isinstance(value, cp.ndarray) else cp.asarray(value)
+                self._data = value if isinstance(value, cp.ndarray) else cp.asarray(value, dtype=self.dtype)
 
     @property
     def T(self):
@@ -549,7 +570,7 @@ class Tensor(np.ndarray):
         return tuple(map(lambda x: Tensor(data=x, use_grad=self._grad_enabled, device=self.device), non_zero_tuple))
 
     def prod(self, axis=None, dtype=None, out=None, keepdims=False, initial=None, where=True):
-        return self.data.prod(axis, dtype, out, keepdims)
+        return Tensor(data=self.data.prod(axis, dtype, out, keepdims), use_grad=self._grad_enabled, device=self.device)
 
     def ptp(self, axis=None, out=None, keepdims=False):
         return Tensor(data=self.data.ptp(axis, out, keepdims), use_grad=self._grad_enabled, device=self.device)
@@ -588,10 +609,12 @@ class Tensor(np.ndarray):
         return out
 
     def std(self, axis=None, dtype=None, out=None, ddof=0, keepdims=False, *, where=True):
-        return self.data.std(axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims)
+        val = self.data.std(axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims)
+        return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def sum(self, axis=None, dtype=None, out=None, keepdims=False, initial=None, where=True):
-        return self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
+        val =  self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
+        return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def take(self, indices, axis=None, out=None, mode='raise'):
         return Tensor(data=self.data.take(indices, axis=axis, out=out), use_grad=self._grad_enabled,
@@ -601,7 +624,8 @@ class Tensor(np.ndarray):
         return self.data.tolist()
 
     def trace(self, offset=0, axis1=0, axis2=1, dtype=None, out=None):
-        return self.data.trace(offset, axis1, axis2, dtype, out=out)
+        val =  self.data.trace(offset, axis1, axis2, dtype, out=out)
+        return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def transpose(self, *axes):
         out = Tensor(data=self.data.transpose(*axes), _children=(self,), _op='T', use_grad=self._grad_enabled,
@@ -615,7 +639,8 @@ class Tensor(np.ndarray):
         return out
 
     def var(self, axis=None, dtype=None, out=None, ddof=0, keepdims=False, *, where=True):
-        return self.data.var(axis, dtype, out, ddof, keepdims)
+        val = self.data.var(axis, dtype, out, ddof, keepdims)
+        return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def __getitem__(self, idx: int | slice | tuple):
         if isinstance(idx, (int, slice)):
@@ -642,7 +667,7 @@ class Tensor(np.ndarray):
     # but I'm so done with this class that I'll leave it like this and perhaps come back to do it at some point later.
 
     def __str__(self):
-        info = self.data.get() if isinstance(self.data, cp.ndarray) else self.data
+        info = self.data.get() if not isinstance(self.data, np.ndarray) else self.data
         data_string = np.asarray(info, dtype=self.dtype).__repr__()
         data_string = data_string[6:-1].rsplit('\n') if 'array' in data_string else data_string.rsplit('\n')
         data_string = [data_string[0]] + [' ' + line.strip() for line in data_string[1:]]
@@ -652,7 +677,7 @@ class Tensor(np.ndarray):
 
     def __repr__(self):
         # Display the Tensors in a way that is consistent to how NumPy, PyTorch, Tensorflow and the such do.
-        info = self.data.get() if isinstance(self.data, cp.ndarray) else self.data
+        info = self.data.get() if not isinstance(self.data, np.ndarray) else self.data
         data_string = np.asarray(info, dtype=self.dtype).__repr__()
         data_string = re.sub(r',\s\[', ',\n       [', data_string)
         data_string = data_string[6:-1].rsplit('\n') if 'array' in data_string else data_string.rsplit('\n')
