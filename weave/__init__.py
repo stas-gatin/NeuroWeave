@@ -5,7 +5,8 @@ from .neuro_storage.saver import save_model
 from .neuro_storage.loader import load_model
 from .neuro_dataset.main import *
 import weave.cuda
-from weave.tensor import Tensor
+from .tensor import Tensor
 from .neuro_functions.functions import *
+from .nn import *
 
 __version__ = '1.0.0'
