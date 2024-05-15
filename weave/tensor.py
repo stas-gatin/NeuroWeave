@@ -26,12 +26,17 @@ class Tensor(np.ndarray):
         An object that represents in which device the tensor is allocated. Can be changed with Tensor.cpu() or
         Tensor.cuda().
     """
+
+    __iadd_hooks = 0
+    __isub_hooks = 0
+    __imul_hooks = 0
+
     def __new__(cls, shape=None, dtype=None, buffer=None, offset=0, strides=None, order=None, data=None,
                 _children=(), _op=None, use_grad: bool = False, device: Union['weave.cuda.Device', str] = 'cpu'):
         # We check whether there is a shape provided or we have to infer it from the data
         if shape is None and data is not None:
             # Handle differences between data on the CPU and the GPU
-            if device == 'cpu' or 'cpu' in device:
+            if device == 'cpu' or (isinstance(device, str) and 'cpu' in device):
                 array = np.asarray(data)
             else:
                 array = data.get() if isinstance(data, cp.ndarray) else np.asarray(data)
@@ -78,6 +83,22 @@ class Tensor(np.ndarray):
             # By using ellipsis indexing, we can refer to all the dimensions of the Tensor
             self[...] = data.get() if isinstance(data, cp.ndarray) else data
 
+    def _create_hooks(self, other, op) -> None:
+        match op:
+            case '+':
+                name = '__iadd_hook'
+            case '-':
+                name = '__isub_hook'
+            case '*':
+                name = '__imul_hook'
+            case _:
+                raise ValueError('Immediate not supported for this operation.')
+        globals()[f'{name}{Tensor.__iadd_hooks}'] = self.copy()
+        if isinstance(other, (np.ndarray, list, Tensor)):
+            self._prev = {id(globals()[f'{name}{Tensor.__iadd_hooks}']), id(other)}
+        else:
+            self._prev = {globals()[f'{name}{Tensor.__iadd_hooks}']}
+
     def __add__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:  # transform organized data structures into Tensors
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
@@ -98,8 +119,8 @@ class Tensor(np.ndarray):
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: '\
                                             f'{self.device} and {other.device}.'
         # We relay on NumPy to handle the actual arithmetic operations
-        out = Tensor(data=(self.data + other.data), _children=(self, other), _op='+', use_grad=self._grad_enabled,
-                     device=self.device)
+        out = Tensor(data=(self.data + other.data), _children=(self.copy(), other.copy()), _op='+',
+                     use_grad=self._grad_enabled, device=self.device)
 
         def _backward():
             # backward pass for addition operations (gradient flows toward the children)
@@ -117,12 +138,12 @@ class Tensor(np.ndarray):
         return self + other
 
     def __iadd__(self, other: Any) -> "Tensor":
-        out = self.__add__(other)
+        out = self + other
+        self._create_hooks(other, '+')
+        self._op = out._op
         self.grad = out.grad
         self.data = out.data
         self._populate(out.data)
-        self._prev = out._prev
-        self._op = out._op
         return self
 
     def __sub__(self, other: Any) -> "Tensor":
@@ -133,11 +154,11 @@ class Tensor(np.ndarray):
 
     def __isub__(self, other: Any) -> "Tensor":
         out = self + (-other)
+        self._create_hooks(other, '-')
+        self._op = out._op
         self.grad = out.grad
         self.data = out.data
         self._populate(out.data)
-        self._prev = out._prev
-        self._op = out._op
         return self
 
     def __mul__(self, other: Any) -> "Tensor":
@@ -182,11 +203,11 @@ class Tensor(np.ndarray):
 
     def __imul__(self, other: Any) -> "Tensor":
         out = self * other
+        self._create_hooks(other, '*')
+        self._op = out._op
         self.grad = out.grad
         self.data = out.data
         self._populate(out.data)
-        self._prev = out._prev
-        self._op = out._op
         return self
 
     def __pow__(self, other: Any) -> "Tensor":
@@ -564,7 +585,8 @@ class Tensor(np.ndarray):
         return self.conjugate()
 
     def copy(self, order='C'):
-        return Tensor(data=self.data.copy(order), dtype=self.dtype, use_grad=self._grad_enabled, device=self.device)
+        return Tensor(data=self.data.copy(order), _children=self._prev, _op=self._op, dtype=self.dtype,
+                      use_grad=self._grad_enabled, device=self.device)
 
     def cumprod(self, axis=None, dtype=None, out=None):
         return Tensor(data=self.data.cumprod(axis, dtype, out), dtype=self.dtype, device=self.device)

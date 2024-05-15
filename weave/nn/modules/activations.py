@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from weave import Tensor, diag, outer, vstack
-from model import Model
+from .model import Model
 
 
 class ReLU(Model):
