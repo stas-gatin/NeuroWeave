@@ -97,7 +97,8 @@ class StandardScaler:
 
 
 def one_hot_encode(dataset, n_classes):
-    return pd.get_dummies(dataset.data[n_classes])
+    encoded = pd.get_dummies(dataset.data[n_classes])
+    return encoded.astype(int)
 
 
 class ColumnTransformer:

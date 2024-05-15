@@ -35,3 +35,4 @@ ct = ColumnTransformer(transformers)
 # Fit and transform the dataset
 df_transformed = ct.fit_transform(my_data2)
 print(df_transformed)
+print(df_transformed.head())
