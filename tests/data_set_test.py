@@ -1,5 +1,6 @@
 import weave
-from weave import StandardScaler
+from weave import StandardScaler, one_hot_encode, ColumnTransformer
+import pandas as pd
 
 my_data = weave.Dataset(path="teleCust1000t.csv", file_type='csv')
 
@@ -11,26 +12,26 @@ my_data = weave.Dataset(path="teleCust1000t.csv", file_type='csv')
 
 # -- StandardScaler -- otro metodo
 scaled_data2 = StandardScaler().fit_transform(my_data)
-
 print(scaled_data2)
-
 
 # train_test_split
 X_train, X_test, y_train, y_test = my_data.train_test_split(data=scaled_data2, x=['region', 'age'], y='custcat', test_size=0.2, seed=10)
 
+# ____________________________________________________________
+# -- ColumnTransformer --
+
+# Load dataset
 my_data2 = weave.Dataset(path="customer.csv", file_type='csv')
-cl = weave.one_hot_encode(my_data2, 'Address')
-print(cl)
 
-# Определяем столбцы, которые нужно масштабировать и кодировать
-numeric_features = ['age', 'salary']
-categorical_features = ['gender', 'department']
+# Define transformers
+transformers = [
+    ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu","Years Employed","Income","Card Debt","Other Debt","Defaulted"]),
+    ('onehot', one_hot_encode, 'Address')
+]
 
+# Create ColumnTransformer instance
+ct = ColumnTransformer(transformers)
 
-# TO DO
-# Создаем ColumnTransformer
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', StandardScaler(), numeric_features),
-        ('cat', OneHotEncoder(), categorical_features)
-    ])
+# Fit and transform the dataset
+df_transformed = ct.fit_transform(my_data2)
+print(df_transformed)
