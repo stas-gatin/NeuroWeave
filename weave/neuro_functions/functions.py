@@ -78,6 +78,8 @@ __all__ = [
     'load',
     'save',
     'exp',
+    'log',
+    'abs'
 ]
 
 
@@ -571,3 +573,12 @@ def log(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
         array = cp.log(ten.data)
 
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+
+
+
+
+
+
+
