@@ -652,7 +652,23 @@ class Tensor(np.ndarray):
                       device=self.device)
 
     def mean(self, axis=None, dtype=None, out=None, keepdims=False, *, where=True):
-        return Tensor(data=self.data.mean(axis, dtype, out, keepdims), use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=self.data.mean(axis, dtype, out, keepdims), use_grad=self._grad_enabled, device=self.device)
+
+        if axis is None:
+            def _backward():
+                self.grad += Tensor(data=np.full_like(np.random.rand(*self.shape), (1 / self.size)),
+                                    device=self.device) * out.grad
+        else:
+            def _backward():
+                s = list(self.shape)
+                s.remove(self.shape.index(axis))
+                fill_value = np.full_like(np.random.rand(*s), 1 / np.prod(s))
+                self.grad += Tensor(data=np.array([fill_value for _ in range(self.shape.index(axis))]),
+                                    device=self.device) * out.grad
+
+        if self._grad_enabled:
+            out._backward = _backward
+        return out
 
     def min(self, axis=None, out=None, keepdims=False, initial=None, where=True):
         return Tensor(data=self.data.min(axis, out, keepdims), use_grad=self._grad_enabled, device=self.device)
@@ -711,7 +727,7 @@ class Tensor(np.ndarray):
         def _backward():
             g = Tensor(self.shape)
             for i, row in enumerate(out.grad):
-                g[im] = row
+                g[i] = row
             self.grad += g
 
         if self._grad_enabled:

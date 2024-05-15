@@ -22,7 +22,7 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
     def forward(self, *tensors) -> Tensor:  # We take args to satisfy the needs of losses forward function
         pass
 
-    def __call__(self, x: Tensor) -> Tensor:
+    def __call__(self, *tensors) -> Tensor:
         pass
 
     def _parameter_buffer(self):
