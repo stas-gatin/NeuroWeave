@@ -119,8 +119,8 @@ class Tensor(np.ndarray):
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: '\
                                             f'{self.device} and {other.device}.'
         # We relay on NumPy to handle the actual arithmetic operations
-        out = Tensor(data=(self.data + other.data), _children=(self.copy(), other.copy()), _op='+',
-                     use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=(self.data + other.data), _children=(self, other), _op='+', use_grad=self._grad_enabled,
+                     device=self.device)
 
         def _backward():
             # backward pass for addition operations (gradient flows toward the children)
@@ -423,46 +423,46 @@ class Tensor(np.ndarray):
         if type(other) in [np.ndarray, list]:
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):
-            return Tensor(data=self.data < other, use_grad=self._grad_enabled, device=self.device)
+            return Tensor(data=self.data < other, dtype=float, use_grad=self._grad_enabled, device=self.device)
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
-        return Tensor(data=self.data < other.data, use_grad=self._grad_enabled, device=self.device)
+        return Tensor(data=self.data < other.data, dtype=float, use_grad=self._grad_enabled, device=self.device)
 
     def __le__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):
-            return Tensor(data=self.data <= other, use_grad=self._grad_enabled, device=self.device)
+            return Tensor(data=self.data <= other, dtype=float, use_grad=self._grad_enabled, device=self.device)
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
-        return Tensor(data=self.data <= other.data, use_grad=self._grad_enabled, device=self.device)
+        return Tensor(data=self.data <= other.data, dtype=float, use_grad=self._grad_enabled, device=self.device)
 
     def __gt__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):
-            return Tensor(data=self.data > other, use_grad=self._grad_enabled, device=self.device)
+            return Tensor(data=self.data > other, dtype=float, use_grad=self._grad_enabled, device=self.device)
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
-        return Tensor(data=self.data > other.data, use_grad=self._grad_enabled, device=self.device)
+        return Tensor(data=self.data > other.data, dtype=float, use_grad=self._grad_enabled, device=self.device)
 
     def __ge__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):
-            return Tensor(data=self.data >= other, use_grad=self._grad_enabled, device=self.device)
+            return Tensor(data=self.data >= other, dtype=float, use_grad=self._grad_enabled, device=self.device)
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
-        return Tensor(data=self.data >= other.data, use_grad=self._grad_enabled, device=self.device)
+        return Tensor(data=self.data >= other.data, dtype=float, use_grad=self._grad_enabled, device=self.device)
 
     def __eq__(self, other):
         if type(other) in [np.ndarray, list]:
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
         elif isinstance(other, (int, float)):
-            return Tensor(data=self.data == other, use_grad=self._grad_enabled, device=self.device)
+            return Tensor(data=self.data == other, dtype=float, use_grad=self._grad_enabled, device=self.device)
         elif not isinstance(other, Tensor):
             raise TypeError(f"Cannot compare 'Tensor' with '{other.__class__.__name__}'")
-        return Tensor(data=self.data == other.data, use_grad=self._grad_enabled, device=self.device)
+        return Tensor(data=self.data == other.data, dtype=float, use_grad=self._grad_enabled, device=self.device)
 
     def exp(self):
         return np.e ** self
@@ -510,7 +510,10 @@ class Tensor(np.ndarray):
                 topo.append(t)
 
         build_topo(self)
-        self.grad = (Tensor(self.shape, device=self.device) * 0) + 1  # We set the first tensor's gradient to 1
+        if self.shape == ():
+            self.grad = 1.
+        else:
+            self.grad = (Tensor(self.shape, device=self.device) * 0) + 1  # We set the first tensor's gradient to 1
         for node in reversed(topo):
             node._backward()  # Run the backwards function of all tensors in reverse
 
@@ -652,12 +655,15 @@ class Tensor(np.ndarray):
                       device=self.device)
 
     def mean(self, axis=None, dtype=None, out=None, keepdims=False, *, where=True):
-        out = Tensor(data=self.data.mean(axis, dtype, out, keepdims), use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=self.data.mean(axis, dtype, out, keepdims), _children=(self,), _op='mean',
+                     use_grad=self._grad_enabled, device=self.device)
 
         if axis is None:
             def _backward():
-                self.grad += Tensor(data=np.full_like(np.random.rand(*self.shape), (1 / self.size)),
-                                    device=self.device) * out.grad
+                val = Tensor(data=np.full_like(np.random.rand(*self.shape), (1 / self.size)), device=self.device)
+                if len(val.shape) < 2:
+                    val = val.unsqueeze(1)
+                self.grad += val * out.grad
         else:
             def _backward():
                 s = list(self.shape)
@@ -724,11 +730,16 @@ class Tensor(np.ndarray):
         val = self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
         out = Tensor(data=val, _children=(self,), _op='sum', use_grad=self._grad_enabled, device=self.device)
 
-        def _backward():
-            g = Tensor(self.shape)
-            for i, row in enumerate(out.grad):
-                g[i] = row
-            self.grad += g
+        if axis is None:
+            def _backward():
+                self.grad += Tensor(data=np.ones(self.shape), device=self.device) * out.grad
+        else:
+            def _backward():
+                out_grad = out.grad.data if isinstance(out.grad.data, np.ndarray) else out.grad.data.get()
+                s = list(self.shape)
+                s[axis] = -1
+                arr = np.array(out_grad).reshape(*s)
+                self.grad += Tensor(data=(np.repeat(arr, self.shape[axis], axis=axis)))
 
         if self._grad_enabled:
             out._backward = _backward
