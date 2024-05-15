@@ -6,7 +6,7 @@ import weave
 
 
 
-a = np.arange(9) - 4
+a = np.arange() - 4
 
 b= weave.norm(a)
 
