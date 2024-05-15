@@ -79,7 +79,21 @@ __all__ = [
     'save',
     'exp',
     'log',
-    'abs'
+    'abs',
+    'sin',
+    'cos',
+    'tan',
+    'sinh',
+    'cosh',
+    'tanh',
+    'prod',
+    'sum',
+    'cumprod',
+    'cumsum',
+    'max',
+    'min',
+    'convolve',
+    'sign',
 ]
 
 
