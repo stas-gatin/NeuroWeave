@@ -19,7 +19,7 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
     def __init__(self, device: str | Device = 'cpu'):
         self.device = Device(device)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, *tensors) -> Tensor:  # We take args to satisfy the needs of losses forward function
         pass
 
     def __call__(self, x: Tensor) -> Tensor:

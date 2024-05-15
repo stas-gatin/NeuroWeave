@@ -478,7 +478,7 @@ class Tensor(np.ndarray):
             if value is None:
                 self._data = np.asarray(self)
             else:
-                types = Union[np.ndarray, list, *weave._types]
+                types = Union[np.ndarray, list, *weave._types, int, float]
                 self._data = value.get() if not isinstance(value, types) else np.asarray(value, dtype=self.dtype)
         else:
             if value is None:
@@ -706,7 +706,17 @@ class Tensor(np.ndarray):
 
     def sum(self, axis=None, dtype=None, out=None, keepdims=False, initial=None, where=True):
         val = self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
-        return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
+        out = Tensor(data=val, _children=(self,), _op='sum', use_grad=self._grad_enabled, device=self.device)
+
+        def _backward():
+            g = Tensor(self.shape)
+            for i, row in enumerate(out.grad):
+                g[im] = row
+            self.grad += g
+
+        if self._grad_enabled:
+            out._backward = _backward
+        return out
 
     def take(self, indices, axis=None, out=None, mode='raise'):
         return Tensor(data=self.data.take(indices, axis=axis, out=out), use_grad=self._grad_enabled,
