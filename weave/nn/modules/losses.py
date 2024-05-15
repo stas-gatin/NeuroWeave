@@ -7,7 +7,7 @@ class L2(Model):
         super().__init__()
 
     def forward(self, x: Tensor) -> Tensor:
-        value =
+        value = ()
 
     def __call__(self, x: Tensor) -> Tensor:
         pass
