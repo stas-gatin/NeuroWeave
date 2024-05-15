@@ -1,9 +1,8 @@
 import numpy as np
 
-from weave import neuro_functions
+from weave import neuro_functions, Tensor
 
 import weave
-b=5
-a=b.log(3)
 
+a = weave.ones((2, 3))
 print(a)

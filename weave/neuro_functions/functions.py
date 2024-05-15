@@ -575,8 +575,151 @@ def log(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
+def sin(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Calculate the sine of all elements in the input array."""
+    if ten.device == 'cpu':
+        array = np.sin(ten.data)
+    else:
+        array = cp.sin(ten.data)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
+def cos(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Calculate the cosine of all elements in the input array."""
+    if ten.device == 'cpu':
+        array = np.cos(ten.data)
+    else:
+        array = cp.cos(ten.data)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def tan(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Calculate the tangent of all elements in the input array."""
+    if ten.device == 'cpu':
+        array = np.tan(ten.data)
+    else:
+        array = cp.tan(ten.data)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def sinh(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Calculate the hyperbolic sine of all elements in the input array."""
+    if ten.device == 'cpu':
+        array = np.sinh(ten.data)
+    else:
+        array = cp.sinh(ten.data)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def cosh(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Calculate the hyperbolic cosine of all elements in the input array."""
+    if ten.device == 'cpu':
+        array = np.cosh(ten.data)
+    else:
+        array = cp.cosh(ten.data)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def tanh(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Calculate the hyperbolic tangent of all elements in the input array."""
+    if ten.device == 'cpu':
+        array = np.tanh(ten.data)
+    else:
+        array = cp.tanh(ten.data)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def prod(ten: Tensor, axis: int = None, dtype: str = None,
+         use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return the product of array elements over a given axis."""
+    if ten.device == 'cpu':
+        array = np.prod(a=ten.data, axis=axis, dtype=dtype)
+    else:
+        array = cp.prod(a=ten.data, axis=axis, dtype=dtype)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def sum(ten: Tensor, axis: int = None, dtype: str = None,
+        use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Sum of array elements over a given axis."""
+    if ten.device == 'cpu':
+        array = np.sum(a=ten.data, axis=axis, dtype=dtype)
+    else:
+        array = cp.sum(a=ten.data, axis=axis, dtype=dtype)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def cumprod(ten: Tensor, axis: int = None, dtype: str = None,
+            use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return the cumulative product of elements along a given axis."""
+    if ten.device == 'cpu':
+        array = np.cumprod(a=ten.data, axis=axis, dtype=dtype)
+    else:
+        array = cp.cumprod(a=ten.data, axis=axis, dtype=dtype)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def cumsum(ten: Tensor, axis: int = None, dtype: str = None,
+           use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return the cumulative sum of the elements along a given axis."""
+    if ten.device == 'cpu':
+        array = np.cumsum(a=ten.data, axis=axis, dtype=dtype)
+    else:
+        array = cp.cumsum(a=ten.data, axis=axis, dtype=dtype)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def max(ten: Tensor, axis: int = None, dtype: str = None,
+        use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return the maximum of an array or maximum along an axis."""
+    if ten.device == 'cpu':
+        array = np.max(a=ten.data, axis=axis, dtype=dtype)
+    else:
+        array = cp.max(a=ten.data, axis=axis, dtype=dtype)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def min(ten: Tensor, axis: int = None, dtype: str = None,
+        use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Return the minimum of an array or minimum along an axis."""
+    if ten.device == 'cpu':
+        array = np.min(a=ten.data, axis=axis, dtype=dtype)
+    else:
+        array = cp.min(a=ten.data, axis=axis, dtype=dtype)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def convolve(ten1: Tensor, ten2: Tensor, mode: str = 'full',
+             use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Returns the discrete, linear convolution of two one-dimensional sequences."""
+    if ten1.device == 'cpu':
+        array = np.convolve(a=ten1.data, v=ten2.data, mode=mode)
+    else:
+        array = cp.convolve(a=ten1.data, v=ten2.data, mode=mode)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+
+def sign(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Returns an element-wise indication of the sign of a number."""
+    if ten.device == 'cpu':
+        array = np.sign(ten.data)
+    else:
+        array = cp.sign(ten.data)
+
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
 
