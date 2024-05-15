@@ -26,8 +26,10 @@ For detailed information, refer to the official documentation
 at https://numpy.org/doc/.
 """
 
+import weave
 import numpy as np
-import cupy as cp
+if weave.cuda.is_available():
+    import cupy as cp
 from weave import Tensor
 
 __all__ = [
