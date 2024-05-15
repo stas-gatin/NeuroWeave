@@ -1,5 +1,5 @@
 from weave import Tensor
-from model import Model
+from .model import Model
 from weave import rand
 
 
