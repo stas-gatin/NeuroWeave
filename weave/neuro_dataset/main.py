@@ -4,6 +4,8 @@ import numpy as np
 __all__ = [
     "Dataset",
     "StandardScaler",
+    "one_hot_encode",
+    "ColumnTransformer"
 ]
 
 
@@ -87,8 +89,63 @@ class StandardScaler:
 
     def fit_transform(self, X):
         """Combines fit and transform into one method."""
-        return self.fit(X).transform(X)
+        return self.fit(X.data).transform(X.data)
 
     def inverse_transform(self, X_scaled):
         """Transforms normalized data back to the original scale."""
         return X_scaled * self.std_ + self.mean_
+
+
+def one_hot_encode(dataset, n_classes):
+    encoded = pd.get_dummies(dataset.data[n_classes])
+    return encoded.astype(int)
+
+
+class ColumnTransformer:
+    def __init__(self, transformers):
+        self.transformers = transformers
+        self.fitted_transformers = {}
+
+    def fit(self, X):
+        """Fits all transformers to the dataset."""
+        for name, transformer, columns in self.transformers:
+            if not callable(transformer):
+                if isinstance(columns, str):
+                    columns = [columns]
+                transformer.fit(X[columns])
+                self.fitted_transformers[name] = transformer
+        return self
+
+    def transform(self, X):
+        """Applies all fitted transformers to the dataset."""
+        X_transformed = X.data.copy()
+        for name, transformer, columns in self.transformers:
+            if isinstance(columns, str):
+                columns = [columns]
+            if callable(transformer):
+                transformed_columns = transformer(X, columns[0])
+                X_transformed = X_transformed.drop(columns, axis=1)
+                X_transformed = pd.concat([X_transformed, transformed_columns], axis=1)
+            else:
+                transformed_columns = transformer.transform(X[columns])
+                if isinstance(transformed_columns, np.ndarray):
+                    transformed_columns = pd.DataFrame(transformed_columns, columns=columns)
+                X_transformed[columns] = transformed_columns
+        return X_transformed
+
+    def fit_transform(self, X):
+        """Combines fit and transform into one method."""
+        return self.fit(X).transform(X)
+
+    def inverse_transform(self, X):
+        """Inverse transforms the dataset back to the original scale."""
+        X_inv_transformed = X.copy()
+        for name, transformer, columns in self.transformers:
+            if isinstance(columns, str):
+                columns = [columns]
+            if not callable(transformer):
+                transformed_columns = transformer.inverse_transform(X[columns])
+                if isinstance(transformed_columns, np.ndarray):
+                    transformed_columns = pd.DataFrame(transformed_columns, columns=columns)
+                X_inv_transformed[columns] = transformed_columns
+        return X_inv_transformed
