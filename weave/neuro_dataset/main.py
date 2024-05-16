@@ -145,6 +145,21 @@ class Dataset:
         """
         return self._data
 
+    def del_row(self):
+        pass
+
+    def del_rows(self):
+        pass
+
+    def del_col(self):
+        pass
+
+    def del_cols(self):
+        pass
+
+    def copy(self):
+        return Dataset(path=self._path)
+
 
 class StandardScaler:
     """
