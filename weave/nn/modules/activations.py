@@ -9,7 +9,7 @@ class ReLU(Model):
         super().__init__()
 
     def forward(self, x: "Tensor") -> Tensor:
-        out = Tensor(abs((x > 0) * x), _children=(x,), _op='relu', use_grad=x.grad_enabled, device=self.device)
+        out = Tensor(data=abs((x > 0) * x), _children=(x,), _op='relu', use_grad=x.grad_enabled, device=self.device)
 
         def _backward():
             x.grad += (out > 0) * out.grad

@@ -28,6 +28,8 @@ class Sequential(Model):
     def __init__(self, layers: list):
         super().__init__()
         self._models = layers
+        for i, layer in enumerate(layers):
+            setattr(self, f'sequential_{i}', layer)
 
     def forward(self, x: Tensor) -> Tensor:
         for layer in self._models:

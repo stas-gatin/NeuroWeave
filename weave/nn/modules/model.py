@@ -25,7 +25,7 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
         pass
 
     def __call__(self, *tensors) -> Tensor:
-        pass
+        self.forward(*tensors)
 
     def _parameter_buffer(self):
         self._parameters = {}  # dictionary for tensors
@@ -47,14 +47,17 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
             self._parameters.update({f'{name}': layer._parameters})  # we add a dictionary to the created one (concatenar)
             self._num_parameters += layer._num_parameters
 
-    def params(self):
-        param_dict = {'weights': [self._parameters]}
-        param_dict['config'] = {
+    def data_dict(self):
+        model_dict = {'weights': [self._parameters]}
+        model_dict['config'] = {
             'name': self.__class__.__name__,
             'num_layers': len(self._layers),
-            'num_parameters': len(param_dict),
+            'num_parameters': len(model_dict),
         }
-        return param_dict
+        return model_dict
+
+    def params(self):
+        return self._depth_call('get')
 
     # Load values from a trained model
     @classmethod
@@ -95,11 +98,20 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
         print(f'Number of parameters: {self._num_parameters}')
 
     def _depth_call(self, op):
+        param_list = []
         for name, value in self._parameters.items():
             if isinstance(value, Tensor):
-                getattr(value, op)()
+                if op != 'get':
+                    getattr(value, op)()
+                else:
+                    param_list.append(value)
             elif isinstance(value, dict):
-                getattr(self, name)._depth_call(op)
+                if op != 'get':
+                    getattr(self, name)._depth_call(op)
+                else:
+                    param_list.extend(getattr(self, name)._depth_call(op))
+        if op == 'get':
+            return param_list
 
     def cpu(self):
         if self.device != 'cpu':
