@@ -73,6 +73,46 @@ class Dataset:
 
 
 class StandardScaler:
+    """
+    This class standardizes features by removing the mean and scaling to unit variance.
+    Standardization is a common requirement for machine learning estimators.
+    Typically, this is done by removing the mean and scaling to unit variance.
+
+    Attributes:
+        mean_ (pd.Series or np.ndarray): The mean value for each feature after fitting.
+        std_ (pd.Series or np.ndarray): The standard deviation for each feature after fitting.
+
+    Methods:
+        fit(X):
+            Calculates the mean and standard deviation of each feature.
+        transform(X):
+            Applies normalization to features using the calculated mean and standard deviation.
+        fit_transform(X):
+            Combines fit and transform into one method.
+        inverse_transform(X_scaled):
+            Transforms normalized data back to the original scale.
+
+    Example:
+        Suppose you have a dataset and you want to standardize certain features:
+
+        my_data = weave.Dataset(path="customer.csv", file_type='csv')
+
+        # Define transformers
+        transformers = [
+            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu", "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted"]),
+            ('onehot', label_encode, 'Address')
+        ]
+
+        # Create ColumnTransformer instance
+        ct = ColumnTransformer(transformers)
+
+        # Fit and transform the dataset
+        df_transformed = ct.fit_transform(my_data)
+        print(df_transformed)
+
+    This will standardize the specified columns of the dataset.
+    """
+
     def __init__(self):
         self.mean_ = None
         self.std_ = None
@@ -192,6 +232,55 @@ def label_encode(dataset, column):
 
 
 class ColumnTransformer:
+    """
+    This class allows the application of different transformations to different columns
+    of a DataFrame. It supports both callable functions and transformer objects with
+    fit and transform methods.
+
+    Args:
+        transformers (list): A list of tuples specifying the transformers. Each tuple
+                             should contain:
+                             - name (str): The name of the transformer.
+                             - transformer (object or callable): The transformer instance
+                               (object with fit/transform methods) or a callable function.
+                             - columns (str or list): The columns to which the transformer
+                               should be applied.
+
+    Attributes:
+        transformers (list): The list of transformers to apply.
+        fitted_transformers (dict): A dictionary to store the fitted transformers.
+
+    Methods:
+        fit(X):
+            Fits all transformers to the dataset.
+        transform(X):
+            Applies all fitted transformers to the dataset.
+        fit_transform(X):
+            Combines fit and transform into one method.
+        inverse_transform(X):
+            Inverse transforms the dataset back to the original scale.
+
+    Example:
+        Suppose you have a dataset loaded using a custom Dataset class like this:
+
+        my_data = weave.Dataset(path="customer.csv", file_type='csv')
+
+        # Define transformers
+        transformers = [
+            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu", "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted"]),
+            ('onehot', label_encode, 'Address')
+        ]
+
+        # Create ColumnTransformer instance
+        ct = ColumnTransformer(transformers)
+
+        # Fit and transform the dataset
+        df_transformed = ct.fit_transform(my_data)
+        print(df_transformed)
+
+    This will apply the specified transformations to the columns of the dataset.
+    """
+
     def __init__(self, transformers):
         self.transformers = transformers
         self.fitted_transformers = {}
