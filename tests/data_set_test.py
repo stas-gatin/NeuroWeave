@@ -1,5 +1,5 @@
 import weave
-from weave import StandardScaler, one_hot_encode, ColumnTransformer
+from weave import StandardScaler, one_hot_encode, ColumnTransformer, label_encode
 import pandas as pd
 
 my_data = weave.Dataset(path="teleCust1000t.csv", file_type='csv')
@@ -26,7 +26,7 @@ my_data2 = weave.Dataset(path="customer.csv", file_type='csv')
 # Define transformers
 transformers = [
     ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu","Years Employed","Income","Card Debt","Other Debt","Defaulted"]),
-    ('onehot', one_hot_encode, 'Address')
+    ('onehot', label_encode, 'Address')
 ]
 
 # Create ColumnTransformer instance

@@ -5,7 +5,8 @@ __all__ = [
     "Dataset",
     "StandardScaler",
     "one_hot_encode",
-    "ColumnTransformer"
+    "ColumnTransformer",
+    "label_encode"
 ]
 
 
@@ -96,9 +97,98 @@ class StandardScaler:
         return X_scaled * self.std_ + self.mean_
 
 
-def one_hot_encode(dataset, n_classes):
-    encoded = pd.get_dummies(dataset.data[n_classes])
+def one_hot_encode(dataset, column):
+    """
+        This function performs one-hot encoding on a specified column of a dataset.
+
+        One-hot encoding is a process of converting categorical variables into a
+        binary matrix where each unique category value is represented by a column
+        and the presence of the category in a row is marked with a 1, while
+        absence is marked with a 0. This method is particularly useful for
+        machine learning algorithms that cannot work with categorical data directly
+        and require numerical input.
+
+        Args:
+            dataset (pd.DataFrame): The input dataset containing the categorical column to encode.
+            column (str): The name of the column in the dataset to be one-hot encoded.
+
+        Returns:
+        pd.DataFrame: A new DataFrame with the one-hot encoded representation of the specified column.
+
+        Example:
+            Suppose you have a dataset loaded using a custom Dataset class like this:
+
+            my_data = weave.Dataset(path="customer.csv", file_type='csv')
+
+            # Define transformers
+            transformers = [
+                ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu","Years Employed","Income","Card Debt","Other Debt","Defaulted"]),
+                ('onehot', one_hot_encode, 'Address')
+            ]
+
+            # Create ColumnTransformer instance
+            ct = ColumnTransformer(transformers)
+
+            # Fit and transform the dataset
+            df_transformed = ct.fit_transform(my_data)
+            print(df_transformed)
+
+        This will apply one-hot encoding to the 'Address' column of the dataset.
+    """
+
+    encoded = pd.get_dummies(dataset.data[column])
+    print(type(encoded))
     return encoded.astype(int)
+
+
+def label_encode(dataset, column):
+    """
+    This function performs label encoding on a specified column of a dataset.
+
+    Label encoding converts categorical values into numeric codes. Each unique
+    category value is assigned a unique integer, making this method useful for
+    machine learning algorithms that require numeric input.
+
+    Args:
+        dataset (pd.DataFrame): The input dataset containing the categorical column to encode.
+        column (str): The name of the column in the dataset to be label encoded.
+
+    Returns:
+        pd.DataFrame: A new DataFrame with the label encoded representation of the specified column.
+        dict: A dictionary mapping original category values to their numeric codes.
+
+    Example:
+        Suppose you have a dataset loaded using a custom Dataset class like this:
+
+        my_data = weave.Dataset(path="customer.csv", file_type='csv')
+
+        # Define transformers
+        transformers = [
+            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu","Years Employed","Income","Card Debt","Other Debt","Defaulted"]),
+            ('label_encoder', label_encode, 'Address')
+        ]
+
+        # Create ColumnTransformer instance
+        ct = ColumnTransformer(transformers)
+
+        # Fit and transform the dataset
+        df_transformed = ct.fit_transform(my_data)
+        print(df_transformed)
+
+    This will apply label encoding to the 'Address' column of the dataset.
+    """
+
+    # Get unique values of the column and create a dictionary of codes
+    unique_values = dataset[column].unique()
+    encoding_dict = {value: idx for idx, value in enumerate(unique_values)}
+
+    # Transform the column, replacing categories with numeric codes
+    encoded_column = dataset[column].map(encoding_dict)
+
+    # Convert the encoded column to a DataFrame
+    encoded_df = pd.DataFrame({column: encoded_column})
+
+    return encoded_df
 
 
 class ColumnTransformer:
