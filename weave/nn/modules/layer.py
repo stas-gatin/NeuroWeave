@@ -44,7 +44,7 @@ class Sequential(Model):
         for i, layer in enumerate(self._models):
             string += f'\n    ({i}): {layer}'
         if self._layers:
-            string += ')'
-        else:
             string += '\n)'
+        else:
+            string += ')'
         return string

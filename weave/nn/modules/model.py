@@ -25,7 +25,7 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
         pass
 
     def __call__(self, *tensors) -> Tensor:
-        self.forward(*tensors)
+        return self.forward(*tensors)
 
     def _parameter_buffer(self):
         self._parameters = {}  # dictionary for tensors
