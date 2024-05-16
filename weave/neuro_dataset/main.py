@@ -11,6 +11,43 @@ __all__ = [
 
 
 class Dataset:
+    """
+        This class is used to load and manage a dataset from a file. It supports loading data from a CSV file and provides methods for accessing and splitting the data.
+
+        Args:
+            path (str): The path to the dataset file.
+            file_type (str): The type of the file, default is 'csv'.
+            sep (str): The delimiter to use, default is ','.
+            quotechar (str): The character used to quote fields, default is '"'.
+
+        Attributes:
+            _path (str): The path to the dataset file.
+            _file_type (str): The type of the file.
+            _sep (str): The delimiter to use.
+            _quotechar (str): The character used to quote fields.
+            _data (pd.DataFrame): The loaded dataset.
+
+        Methods:
+            load_dataset() -> pd.DataFrame:
+                Loads the dataset from the specified file and returns it as a DataFrame.
+            __getitem__(idx):
+                Allows access to the dataset using indexing.
+            drop():
+                Placeholder method for dropping data.
+            train_test_split(data, x, y, test_size=0.2, seed=1):
+                Splits the dataset into training and testing sets.
+            data:
+                Returns the loaded dataset.
+
+        Example:
+            my_data = Dataset(path="customer.csv", file_type='csv')
+
+            # Access data
+            print(my_data.data)
+
+            # Split data into training and testing sets
+            X_train, X_test, y_train, y_test = Dataset.train_test_split(my_data.data, ['feature1', 'feature2'], 'target')
+        """
     def __init__(
             self,
             path,
@@ -24,16 +61,34 @@ class Dataset:
         self._quotechar = quotechar
         self._data = self.load_dataset()
 
-    def load_dataset(self) -> "Dataset":
+    def load_dataset(self):
+        """
+        Loads the dataset from the specified file and returns it as a DataFrame.
+
+        Returns:
+            pd.DataFrame: The loaded dataset.
+        """
         if self._file_type == 'csv':
             self._data = pd.read_csv(filepath_or_buffer=self._path,
                                      sep=self._sep, quotechar=self._quotechar)
             return self._data
 
     def __getitem__(self, idx):
+        """
+        Allows access to the dataset using indexing.
+
+        Args:
+            idx (int or str): The index or column name to access.
+
+        Returns:
+            The data at the specified index or column.
+        """
         return self._data[idx]
 
     def drop(self):
+        """
+        Placeholder method for dropping data.
+        """
         pass
 
     @staticmethod
@@ -44,6 +99,19 @@ class Dataset:
             test_size=0.2,
             seed=1
     ):
+        """
+        Splits the dataset into training and testing sets.
+
+        Args:
+            data (pd.DataFrame): The input dataset.
+            x (list): List of feature column names.
+            y (str): The target column name.
+            test_size (float): The proportion of the dataset to include in the test split, default is 0.2.
+            seed (int): Random seed for reproducibility, default is 1.
+
+        Returns:
+            tuple: Four arrays: X_train, X_test, y_train, y_test.
+        """
         x = data[x[::]].values
         y = data[y].values
 
@@ -69,6 +137,12 @@ class Dataset:
 
     @property
     def data(self):
+        """
+        Returns the loaded dataset.
+
+        Returns:
+            pd.DataFrame: The loaded dataset.
+        """
         return self._data
 
 
@@ -177,7 +251,6 @@ def one_hot_encode(dataset, column):
     """
 
     encoded = pd.get_dummies(dataset.data[column])
-    print(type(encoded))
     return encoded.astype(int)
 
 
@@ -318,7 +391,7 @@ class ColumnTransformer:
 
     def inverse_transform(self, X):
         """Inverse transforms the dataset back to the original scale."""
-        X_inv_transformed = X.copy()
+        X_inv_transformed = X.data.copy()
         for name, transformer, columns in self.transformers:
             if isinstance(columns, str):
                 columns = [columns]
