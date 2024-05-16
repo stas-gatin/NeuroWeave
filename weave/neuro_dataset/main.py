@@ -83,6 +83,27 @@ class Dataset:
             sep=',',
             quotechar='"'
     ):
+        """
+        Initializes the Dataset object with the specified file path and options for reading the data.
+
+        This constructor sets up the Dataset object by storing the provided parameters
+        and loading the dataset from the specified file. The dataset is loaded into
+        a pandas DataFrame.
+
+        Args:
+            path (str): The path to the dataset file.
+            file_type (str): The type of the file, default is 'csv'. Currently, only 'csv' is supported.
+            sep (str): The delimiter to use for separating values, default is ','.
+            quotechar (str): The character used to quote fields containing special characters, default is '"'.
+
+        Attributes:
+            self._path (str): The path to the dataset file.
+            self._file_type (str): The type of the file.
+            self._sep (str): The delimiter to use.
+            self._quotechar (str): The character used to quote fields.
+            self._data (pd.DataFrame): The loaded dataset as a pandas DataFrame.
+        """
+
         self._path = path
         self._file_type = file_type
         self._sep = sep
