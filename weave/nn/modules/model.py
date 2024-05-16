@@ -1,5 +1,7 @@
+import weave.nn
 from weave import Tensor
 from weave.cuda import Device
+import re
 
 
 # We created the base class for all models as well as its metaclass to run functions in the background
@@ -74,7 +76,13 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
     def __repr__(self) -> str:
         s = f'{self.__class__.__name__}('
         for name, value in self._layers.items():
-            s += f'\n    ({name}): {value}'
+            if not isinstance(value, weave.nn.Sequential):
+                s += f'\n    ({name}): {value}'
+            else:
+                seq_string = value.__repr__()
+                seq_string = re.sub(r'\n\s{4}\(', '\n               (', seq_string)
+                seq_string = re.sub(r'\n\)', '\n           )', seq_string)
+                s += f'\n    ({name}): {seq_string}'
         if len(self._layers) == 0:
             s += ')'
         else:

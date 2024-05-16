@@ -98,6 +98,16 @@ class Tensor(np.ndarray):
             self._prev = {id(globals()[f'{name}{Tensor.__iadd_hooks}']), id(other)}
         else:
             self._prev = {globals()[f'{name}{Tensor.__iadd_hooks}']}
+        setattr(Tensor, name, getattr(Tensor, name) + 1)
+
+    @staticmethod
+    def _eliminate_hooks() -> None:
+        hooks = ['__iadd_hook', '__isub_hook', '__imul_hook']
+        for name in hooks:
+            for var in globals().keys():
+                if name in var:
+                    del globals()[var]
+            setattr(Tensor, name, 0)
 
     def __add__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:  # transform organized data structures into Tensors

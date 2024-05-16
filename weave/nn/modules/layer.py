@@ -27,10 +27,10 @@ class LayerDense(Model):
 class Sequential(Model):
     def __init__(self, layers: list):
         super().__init__()
-        self._layers = layers
+        self._models = layers
 
     def forward(self, x: Tensor) -> Tensor:
-        for layer in self._layers:
+        for layer in self._models:
             x = layer(x)
         return x
 
@@ -39,10 +39,10 @@ class Sequential(Model):
 
     def __repr__(self):
         string = f'Sequential('
-        for i, layer in enumerate(self._layers):
-            string += f'\n   ({i}): {layer}'
+        for i, layer in enumerate(self._models):
+            string += f'\n    ({i}): {layer}'
         if self._layers:
-            string += '\n)'
-        else:
             string += ')'
+        else:
+            string += '\n)'
         return string
