@@ -280,26 +280,66 @@ class StandardScaler:
     """
 
     def __init__(self):
+        """
+        Initializes the StandardScaler object.
+
+        This constructor initializes the mean and standard deviation attributes to None.
+        These attributes will be calculated when the fit method is called.
+        """
         self.mean_ = None
         self.std_ = None
 
     def fit(self, X):
-        """Calculates the mean and standard deviation of each feature."""
+        """
+        Calculates the mean and standard deviation of each feature.
+
+        Args:
+            X (pd.DataFrame or np.ndarray): The input data used to calculate the mean and standard deviation.
+
+        Returns:
+            StandardScaler: The fitted scaler with calculated mean and standard deviation.
+        """
         self.mean_ = X.mean(axis=0)
         self.std_ = X.std(axis=0)
         return self
 
     def transform(self, X):
-        """Applies normalization to features using the calculated
-            mean and standard deviation."""
+        """
+        Applies normalization to features using the calculated mean and standard deviation.
+
+        Args:
+            X (pd.DataFrame or np.ndarray): The input data to be normalized.
+
+        Returns:
+            pd.DataFrame or np.ndarray: The normalized data.
+        """
         return (X - self.mean_) / self.std_
 
     def fit_transform(self, X):
-        """Combines fit and transform into one method."""
-        return self.fit(X.data).transform(X.data)
+        """
+        Combines fit and transform into one method.
+
+        This method first fits the scaler to the data (calculating mean and standard deviation),
+        and then applies normalization to the data.
+
+        Args:
+            X (pd.DataFrame or np.ndarray): The input data to be fitted and transformed.
+
+        Returns:
+            pd.DataFrame or np.ndarray: The normalized data.
+        """
+        return self.fit(X).transform(X)
 
     def inverse_transform(self, X_scaled):
-        """Transforms normalized data back to the original scale."""
+        """
+        Transforms normalized data back to the original scale.
+
+        Args:
+            X_scaled (pd.DataFrame or np.ndarray): The normalized data to be transformed back to the original scale.
+
+        Returns:
+            pd.DataFrame or np.ndarray: The data transformed back to the original scale.
+        """
         return X_scaled * self.std_ + self.mean_
 
 
