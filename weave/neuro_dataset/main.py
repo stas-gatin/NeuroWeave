@@ -1,12 +1,40 @@
+"""
+MIT License
+
+Copyright (c) 2024 NeuroWeave
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import pandas as pd
 import numpy as np
 
+
+# The __all__ declaration defines the public API of this module.
+# It specifies the classes and functions that should be accessible
+# when this module is imported with 'from module import *'.
 __all__ = [
-    "Dataset",
-    "StandardScaler",
-    "one_hot_encode",
-    "ColumnTransformer",
-    "label_encode"
+    "Dataset",          # Class for loading and managing datasets
+    "StandardScaler",   # Class for standardizing features by removing the mean and scaling to unit variance
+    "one_hot_encode",   # Function for one-hot encoding categorical variables
+    "ColumnTransformer",# Class for applying different transformations to different columns
+    "label_encode"      # Function for label encoding categorical variables
 ]
 
 
@@ -61,18 +89,6 @@ class Dataset:
         self._quotechar = quotechar
         self._data = self.load_dataset()
 
-    def load_dataset(self):
-        """
-        Loads the dataset from the specified file and returns it as a DataFrame.
-
-        Returns:
-            pd.DataFrame: The loaded dataset.
-        """
-        if self._file_type == 'csv':
-            self._data = pd.read_csv(filepath_or_buffer=self._path,
-                                     sep=self._sep, quotechar=self._quotechar)
-            return self._data
-
     def __getitem__(self, idx):
         """
         Allows access to the dataset using indexing.
@@ -85,11 +101,66 @@ class Dataset:
         """
         return self._data[idx]
 
-    def drop(self):
+    def __str__(self):
         """
-        Placeholder method for dropping data.
+        Returns a string representation of the dataset.
+
+        This method overrides the default string representation of the Dataset object.
+        It provides a human-readable view of the dataset by converting the underlying
+        DataFrame (_data) to a string. This is particularly useful for debugging and
+        quickly inspecting the contents of the dataset.
+
+        Returns:
+            str: A string representation of the dataset (DataFrame).
         """
-        pass
+        return str(self._data)
+
+    def load_dataset(self):
+        """
+        Loads the dataset from the specified file and returns it as a DataFrame.
+
+        Returns:
+            pd.DataFrame: The loaded dataset.
+        """
+        if self._file_type == 'csv':
+            self._data = pd.read_csv(filepath_or_buffer=self._path,
+                                     sep=self._sep, quotechar=self._quotechar)
+            return self._data
+
+    def del_row(self, row: str | list = None):
+        """
+        Deletes specified rows from the dataset.
+
+        Args:
+            row (str or list): The row label or list of row labels to delete.
+
+        Returns:
+            Dataset: The updated dataset.
+        """
+        self._data.drop(row, axis=0, inplace=True)
+        return self
+
+    def del_col(self, col: str | list = None):
+        """
+        Deletes specified columns from the dataset.
+
+        Args:
+            col (str or list): The column label or list of column labels to delete.
+
+        Returns:
+            Dataset: The updated dataset.
+        """
+        self._data.drop(col, axis=1, inplace=True)
+        return self
+
+    def copy(self):
+        """
+        Creates a copy of the Dataset instance.
+
+        Returns:
+            Dataset: A new Dataset instance with the same path.
+        """
+        return Dataset(path=self._path)
 
     @staticmethod
     def train_test_split(
@@ -144,21 +215,6 @@ class Dataset:
             pd.DataFrame: The loaded dataset.
         """
         return self._data
-
-    def del_row(self):
-        pass
-
-    def del_rows(self):
-        pass
-
-    def del_col(self):
-        pass
-
-    def del_cols(self):
-        pass
-
-    def copy(self):
-        return Dataset(path=self._path)
 
 
 class StandardScaler:

@@ -8,7 +8,7 @@ from weave import StandardScaler, one_hot_encode, ColumnTransformer, label_encod
 # Load dataset
 my_data = Dataset(path="customer.csv", file_type='csv')
 
-# ____________________________________________________________
+# _____________EXAMPLE 1_______________________________________________
 # Define transformers (using one-hot encoder for categorical data)
 transformers = [
     ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu", "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted", "DebtIncomeRatio"]),
@@ -22,8 +22,8 @@ ct = ColumnTransformer(transformers)
 df_transformed = ct.fit_transform(my_data)
 print(df_transformed)
 
-# ____________________________________________________________
-# Define transformers (using one-hot encoder for categorical data)
+# ______________EXAMPLE 2______________________________________________
+# Define transformers (using label encoder for categorical data)
 transformers = [
     ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu", "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted", "DebtIncomeRatio"]),
     ('onehot', label_encode, 'Address')
