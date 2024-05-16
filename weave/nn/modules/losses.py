@@ -1,6 +1,6 @@
 from .model import Model
 from weave import Tensor, rand
-from .activations import Softmax
+from .activations import Softmax, Sigmoid
 
 
 class L1Loss(Model):
@@ -50,3 +50,34 @@ class CrossEntropyLoss(Model):
 
     def __repr__(self) -> str:
         return 'CrossEntropyLoss()'
+
+
+class BCELoss(Model):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x: Tensor, y: Tensor) -> Tensor:
+        formula = y * x.log() + (1 - y) * (1 - x).log()
+        return -(formula.mean())
+
+    def __call__(self, x: Tensor, y: Tensor) -> Tensor:
+        return self.forward(x, y)
+
+    def __repr__(self) -> str:
+        return 'BCELoss()'
+
+
+class BCEWithLogitsLoss(Model):
+    def __init__(self):
+        super().__init__()
+        self._sigmoid = Sigmoid()
+
+    def forward(self, x: Tensor, y: Tensor) -> Tensor:
+        formula = y * self._sigmoid(x).log() + (1 - y) * (1 - self._sigmoid(x)).log()
+        return -(formula.mean())
+
+    def __call__(self, x: Tensor, y: Tensor) -> Tensor:
+        return self.forward(x, y)
+
+    def __repr__(self) -> str:
+        return 'BCEWithLogitsLoss()'

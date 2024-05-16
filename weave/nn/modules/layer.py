@@ -1,3 +1,4 @@
+from typing import List
 from weave import Tensor
 from .model import Model
 from weave import rand
@@ -21,3 +22,27 @@ class LayerDense(Model):
     def __repr__(self):
         return (f'LayerDense(in_neurons={self._weights.shape[0]}, out_neurons={self._weights.shape[1]}, '
                 f'bias={hasattr(self, '_bias')})')
+
+
+class Sequential(Model):
+    def __init__(self, layers: list):
+        super().__init__()
+        self._layers = layers
+
+    def forward(self, x: Tensor) -> Tensor:
+        for layer in self._layers:
+            x = layer(x)
+        return x
+
+    def __call__(self, x: Tensor) -> Tensor:
+        return self.forward(x)
+
+    def __repr__(self):
+        string = f'Sequential('
+        for i, layer in enumerate(self._layers):
+            string += f'\n   ({i}): {layer}'
+        if self._layers:
+            string += '\n)'
+        else:
+            string += ')'
+        return string

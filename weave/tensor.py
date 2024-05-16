@@ -611,7 +611,7 @@ class Tensor(np.ndarray):
         new.fill(value)
         return Tensor(data=new, use_grad=self._grad_enabled, device=self.device)
 
-    def flatten(self, order='C'):
+    def flatten(self, order='C') -> "Tensor":
         val = np.expand_dims(self.data.flatten(), axis=0) if isinstance(self.data, np.ndarray) else \
               cp.expand_dims(self.data.flatten(), axis=0)
         out = Tensor(data=val, _children=(self,), _op='flat', use_grad=self._grad_enabled, device=self.device)
