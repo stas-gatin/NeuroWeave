@@ -165,6 +165,21 @@ class Dataset:
             self._data = pd.read_excel(self._path)
         elif self._file_type == 'pickle':
             self._data = pd.read_pickle(self._path)
+        elif self._file_type == 'parquet':
+            self._data = pd.read_parquet(self._path)
+        elif self._file_type == 'hdf':
+            self._data = pd.read_hdf(self._path)
+        elif self._file_type == 'feather':
+            self._data = pd.read_feather(self._path)
+        elif self._file_type == 'stata':
+            self._data = pd.read_stata(self._path)
+        elif self._file_type == 'sas':
+            self._data = pd.read_sas(self._path)
+        elif self._file_type == 'spss':
+            self._data = pd.read_spss(self._path)
+        else:
+            raise ValueError(f"Unsupported file type: {self._file_type}")
+
         return self._data
 
     def del_row(self, row: str | list = None):
