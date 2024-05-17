@@ -173,6 +173,7 @@ def rand(*shape: int | tuple,
     array = np.random.rand(*shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
+
 def randn(*shape: int | tuple,
           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Random values in a given shape."""
