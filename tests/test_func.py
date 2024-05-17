@@ -1,14 +1,8 @@
 import numpy as np
 
-from weave import neuro_functions
+from weave import neuro_functions, Tensor
 
 import weave
 
-
-
-a = np.arange(9) - 4
-
-b= weave.norm(a)
-
-print(b)
-
+a = weave.ones((2, 3))
+print(a)
