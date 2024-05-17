@@ -22,25 +22,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 # The __all__ declaration defines the public API of this module.
 # It specifies the classes and functions that should be accessible
 # when this module is imported with 'from module import *'.
 __all__ = [
-    "Dataset",          # Class for loading and managing datasets
-    "StandardScaler",   # Class for standardizing features by removing the mean and scaling to unit variance
-    "one_hot_encode",   # Function for one-hot encoding categorical variables
-    "ColumnTransformer",# Class for applying different transformations to different columns
-    "label_encode"      # Function for label encoding categorical variables
+    # Class for loading and managing datasets
+    "Dataset",
+    # Class for standardizing features by removing
+    # the mean and scaling to unit variance
+    "StandardScaler",
+    # Function for one-hot encoding categorical variables
+    "one_hot_encode",
+    # Class for applying different transformations to different columns
+    "ColumnTransformer",
+    # Function for label encoding categorical variables
+    "label_encode"
 ]
 
 
 class Dataset:
     """
-        This class is used to load and manage a dataset from a file. It supports loading data from a CSV file and provides methods for accessing and splitting the data.
+        This class is used to load and manage a dataset from a file. It supports
+        loading data from a CSV file and provides methods for accessing and
+        splitting the data.
 
         Args:
             path (str): The path to the dataset file.
@@ -57,7 +65,8 @@ class Dataset:
 
         Methods:
             load_dataset() -> pd.DataFrame:
-                Loads the dataset from the specified file and returns it as a DataFrame.
+                Loads the dataset from the specified
+                file and returns it as a DataFrame.
             __getitem__(idx):
                 Allows access to the dataset using indexing.
             drop():
@@ -73,9 +82,11 @@ class Dataset:
             # Access data
             print(my_data.data)
 
-            # Split data into training and testing sets
-            X_train, X_test, y_train, y_test = Dataset.train_test_split(my_data.data, ['feature1', 'feature2'], 'target')
-        """
+            # Split data into training and testing sets X_train, X_test,
+            y_train, y_test = Dataset.train_test_split(my_data.data,
+            ['feature1', 'feature2'], 'target')
+    """
+
     def __init__(
             self,
             path,
@@ -84,7 +95,8 @@ class Dataset:
             quotechar='"'
     ):
         """
-        Initializes the Dataset object with the specified file path and options for reading the data.
+        Initializes the Dataset object with the specified file path and
+        options for reading the data.
 
         This constructor sets up the Dataset object by storing the provided parameters
         and loading the dataset from the specified file. The dataset is loaded into
@@ -92,7 +104,8 @@ class Dataset:
 
         Args:
             path (str): The path to the dataset file.
-            file_type (str): The type of the file, default is 'csv'. Currently, only 'csv' is supported.
+            file_type (str): The type of the file, default is 'csv'.
+            Currently, only 'csv' is supported.
             sep (str): The delimiter to use for separating values, default is ','.
             quotechar (str): The character used to quote fields containing special characters, default is '"'.
 
@@ -134,7 +147,7 @@ class Dataset:
         Returns:
             str: A string representation of the dataset (DataFrame).
         """
-        return str(self._data)
+        return pd.DataFrame(self._data)
 
     def load_dataset(self):
         """
@@ -222,10 +235,10 @@ class Dataset:
         test_indices = shuffled_indices[:test_set_size]
         train_indices = shuffled_indices[test_set_size:]
 
-        X_train, X_test = x[train_indices], x[test_indices]
+        x_train, x_test = x[train_indices], x[test_indices]
         y_train, y_test = y[train_indices], y[test_indices]
 
-        return X_train, X_test, y_train, y_test
+        return x_train, x_test, y_train, y_test
 
     @property
     def data(self):
@@ -249,13 +262,13 @@ class StandardScaler:
         std_ (pd.Series or np.ndarray): The standard deviation for each feature after fitting.
 
     Methods:
-        fit(X):
+        fit(x):
             Calculates the mean and standard deviation of each feature.
-        transform(X):
+        transform(x):
             Applies normalization to features using the calculated mean and standard deviation.
-        fit_transform(X):
+        fit_transform(x):
             Combines fit and transform into one method.
-        inverse_transform(X_scaled):
+        inverse_transform(x_scaled):
             Transforms normalized data back to the original scale.
 
     Example:
@@ -264,8 +277,10 @@ class StandardScaler:
         my_data = weave.Dataset(path="customer.csv", file_type='csv')
 
         # Define transformers
+
         transformers = [
-            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu", "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted"]),
+            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu",
+            "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted"]),
             ('onehot', label_encode, 'Address')
         ]
 
@@ -289,33 +304,33 @@ class StandardScaler:
         self.mean_ = None
         self.std_ = None
 
-    def fit(self, X):
+    def fit(self, x):
         """
         Calculates the mean and standard deviation of each feature.
 
         Args:
-            X (pd.DataFrame or np.ndarray): The input data used to calculate the mean and standard deviation.
+            x (pd.DataFrame or np.ndarray): The input data used to calculate the mean and standard deviation.
 
         Returns:
             StandardScaler: The fitted scaler with calculated mean and standard deviation.
         """
-        self.mean_ = X.mean(axis=0)
-        self.std_ = X.std(axis=0)
+        self.mean_ = x.mean(axis=0)
+        self.std_ = x.std(axis=0)
         return self
 
-    def transform(self, X):
+    def transform(self, x):
         """
         Applies normalization to features using the calculated mean and standard deviation.
 
         Args:
-            X (pd.DataFrame or np.ndarray): The input data to be normalized.
+            x (pd.DataFrame or np.ndarray): The input data to be normalized.
 
         Returns:
             pd.DataFrame or np.ndarray: The normalized data.
         """
-        return (X - self.mean_) / self.std_
+        return (x - self.mean_) / self.std_
 
-    def fit_transform(self, X):
+    def fit_transform(self, x):
         """
         Combines fit and transform into one method.
 
@@ -323,24 +338,24 @@ class StandardScaler:
         and then applies normalization to the data.
 
         Args:
-            X (pd.DataFrame or np.ndarray): The input data to be fitted and transformed.
+            x (pd.DataFrame or np.ndarray): The input data to be fitted and transformed.
 
         Returns:
             pd.DataFrame or np.ndarray: The normalized data.
         """
-        return self.fit(X).transform(X)
+        return self.fit(x).transform(x)
 
-    def inverse_transform(self, X_scaled):
+    def inverse_transform(self, x_scaled):
         """
         Transforms normalized data back to the original scale.
 
         Args:
-            X_scaled (pd.DataFrame or np.ndarray): The normalized data to be transformed back to the original scale.
+            x_scaled (pd.DataFrame or np.ndarray): The normalized data to be transformed back to the original scale.
 
         Returns:
             pd.DataFrame or np.ndarray: The data transformed back to the original scale.
         """
-        return X_scaled * self.std_ + self.mean_
+        return x_scaled * self.std_ + self.mean_
 
 
 def one_hot_encode(dataset, column):
@@ -367,8 +382,10 @@ def one_hot_encode(dataset, column):
             my_data = weave.Dataset(path="customer.csv", file_type='csv')
 
             # Define transformers
+
             transformers = [
-                ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu","Years Employed","Income","Card Debt","Other Debt","Defaulted"]),
+                ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu",
+                "Years Employed","Income","Card Debt","Other Debt","Defaulted"]),
                 ('onehot', one_hot_encode, 'Address')
             ]
 
@@ -408,8 +425,10 @@ def label_encode(dataset, column):
         my_data = weave.Dataset(path="customer.csv", file_type='csv')
 
         # Define transformers
+
         transformers = [
-            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu","Years Employed","Income","Card Debt","Other Debt","Defaulted"]),
+            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu",
+            "Years Employed","Income","Card Debt","Other Debt","Defaulted"]),
             ('label_encoder', label_encode, 'Address')
         ]
 
@@ -456,13 +475,13 @@ class ColumnTransformer:
         fitted_transformers (dict): A dictionary to store the fitted transformers.
 
     Methods:
-        fit(X):
+        fit(x):
             Fits all transformers to the dataset.
-        transform(X):
+        transform(x):
             Applies all fitted transformers to the dataset.
-        fit_transform(X):
+        fit_transform(x):
             Combines fit and transform into one method.
-        inverse_transform(X):
+        inverse_transform(x):
             Inverse transforms the dataset back to the original scale.
 
     Example:
@@ -472,7 +491,8 @@ class ColumnTransformer:
 
         # Define transformers
         transformers = [
-            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu", "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted"]),
+            ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu",
+            "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted"]),
             ('onehot', label_encode, 'Address')
         ]
 
@@ -502,12 +522,12 @@ class ColumnTransformer:
         self.transformers = transformers
         self.fitted_transformers = {}
 
-    def fit(self, X):
+    def fit(self, x: "Dataset"):
         """
         Fits all transformers to the dataset.
 
         Args:
-            X (pd.DataFrame): The input dataset to fit the transformers.
+            x (pd.DataFrame): The input dataset to fit the transformers.
 
         Returns:
             ColumnTransformer: The fitted ColumnTransformer instance.
@@ -517,36 +537,38 @@ class ColumnTransformer:
             if not callable(transformer):
                 if isinstance(columns, str):
                     columns = [columns]
-                transformer.fit(X[columns])
+                transformer.fit(x[columns])
                 self.fitted_transformers[name] = transformer
         return self
 
-    def transform(self, X):
+    def transform(self, x: "Dataset"):
         """
         Applies all fitted transformers to the dataset.
 
         Args:
-            X (pd.DataFrame): The input dataset to transform.
+            x (pd.DataFrame): The input dataset to transform.
 
         Returns:
             pd.DataFrame: The transformed dataset.
         """
-        X_transformed = X.data.copy()
+        x_transformed = x.data.copy()
         for name, transformer, columns in self.transformers:
             if isinstance(columns, str):
                 columns = [columns]
             if callable(transformer):
-                transformed_columns = transformer(X, columns[0])
-                X_transformed = X_transformed.drop(columns, axis=1)
-                X_transformed = pd.concat([X_transformed, transformed_columns], axis=1)
+                transformed_columns = transformer(x, columns[0])
+                x_transformed = x_transformed.drop(columns, axis=1)
+                x_transformed = pd.concat([x_transformed, transformed_columns],
+                                          axis=1)
             else:
-                transformed_columns = transformer.transform(X[columns])
+                transformed_columns = transformer.transform(x[columns])
                 if isinstance(transformed_columns, np.ndarray):
-                    transformed_columns = pd.DataFrame(transformed_columns, columns=columns)
-                X_transformed[columns] = transformed_columns
-        return X_transformed
+                    transformed_columns = pd.DataFrame(transformed_columns,
+                                                       columns=columns)
+                x_transformed[columns] = transformed_columns
+        return x_transformed
 
-    def fit_transform(self, X):
+    def fit_transform(self, x: "Dataset"):
         """
         Combines fit and transform into one method.
 
@@ -554,30 +576,31 @@ class ColumnTransformer:
         transformations to the data.
 
         Args:
-            X (pd.DataFrame): The input dataset to fit and transform.
+            x (pd.DataFrame): The input dataset to fit and transform.
 
         Returns:
             pd.DataFrame: The transformed dataset.
         """
-        return self.fit(X).transform(X)
+        return self.fit(x).transform(x)
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, x):
         """
         Inverse transforms the dataset back to the original scale.
 
         Args:
-            X (pd.DataFrame): The transformed dataset to inverse transform.
+            x (pd.DataFrame): The transformed dataset to inverse transform.
 
         Returns:
             pd.DataFrame: The dataset transformed back to the original scale.
         """
-        X_inv_transformed = X.data.copy()
+        x_inv_transformed = x.data.copy()
         for name, transformer, columns in self.transformers:
             if isinstance(columns, str):
                 columns = [columns]
             if not callable(transformer):
-                transformed_columns = transformer.inverse_transform(X[columns])
+                transformed_columns = transformer.inverse_transform(x[columns])
                 if isinstance(transformed_columns, np.ndarray):
-                    transformed_columns = pd.DataFrame(transformed_columns, columns=columns)
-                X_inv_transformed[columns] = transformed_columns
-        return X_inv_transformed
+                    transformed_columns = pd.DataFrame(transformed_columns,
+                                                       columns=columns)
+                x_inv_transformed[columns] = transformed_columns
+        return x_inv_transformed
