@@ -1,5 +1,7 @@
+import weave.nn
 from weave import Tensor
 from weave.cuda import Device
+import re
 
 
 # We created the base class for all models as well as its metaclass to run functions in the background
@@ -19,11 +21,11 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
     def __init__(self, device: str | Device = 'cpu'):
         self.device = Device(device)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, *tensors) -> Tensor:  # We take args to satisfy the needs of losses forward function
         pass
 
-    def __call__(self, x: Tensor) -> Tensor:
-        pass
+    def __call__(self, *tensors) -> Tensor:
+        return self.forward(*tensors)
 
     def _parameter_buffer(self):
         self._parameters = {}  # dictionary for tensors
@@ -45,14 +47,17 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
             self._parameters.update({f'{name}': layer._parameters})  # we add a dictionary to the created one (concatenar)
             self._num_parameters += layer._num_parameters
 
-    def params(self):
-        param_dict = {'weights': [self._parameters]}
-        param_dict['config'] = {
+    def data_dict(self):
+        model_dict = {'weights': [self._parameters]}
+        model_dict['config'] = {
             'name': self.__class__.__name__,
             'num_layers': len(self._layers),
-            'num_parameters': len(param_dict),
+            'num_parameters': len(model_dict),
         }
-        return param_dict
+        return model_dict
+
+    def params(self):
+        return self._depth_call('get')
 
     # Load values from a trained model
     @classmethod
@@ -74,7 +79,13 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
     def __repr__(self) -> str:
         s = f'{self.__class__.__name__}('
         for name, value in self._layers.items():
-            s += f'\n    ({name}): {value}'
+            if not isinstance(value, weave.nn.Sequential):
+                s += f'\n    ({name}): {value}'
+            else:
+                seq_string = value.__repr__()
+                seq_string = re.sub(r'\n\s{4}\(', '\n               (', seq_string)
+                seq_string = re.sub(r'\n\)', '\n           )', seq_string)
+                s += f'\n    ({name}): {seq_string}'
         if len(self._layers) == 0:
             s += ')'
         else:
@@ -87,11 +98,20 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
         print(f'Number of parameters: {self._num_parameters}')
 
     def _depth_call(self, op):
+        param_list = []
         for name, value in self._parameters.items():
             if isinstance(value, Tensor):
-                getattr(value, op)()
+                if op != 'get':
+                    getattr(value, op)()
+                else:
+                    param_list.append(value)
             elif isinstance(value, dict):
-                getattr(self, name)._depth_call(op)
+                if op != 'get':
+                    getattr(self, name)._depth_call(op)
+                else:
+                    param_list.extend(getattr(self, name)._depth_call(op))
+        if op == 'get':
+            return param_list
 
     def cpu(self):
         if self.device != 'cpu':
