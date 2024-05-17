@@ -1,15 +1,19 @@
 from typing import List
 from weave import Tensor
 from .model import Model
-from weave import rand
+from weave import randn
+import numpy as np
 
 
 class LayerDense(Model):
     def __init__(self, in_neurons: int, out_neurons: int, bias: bool = True):
         super().__init__()
-        self._weights = rand((in_neurons, out_neurons), use_grad=True, device=self.device)  # tensor made of weights
+        self._weights = Tensor(data=np.random.uniform(-np.sqrt(1 / in_neurons), np.sqrt(1 / in_neurons),
+                                                      (in_neurons, out_neurons)), use_grad=True,
+                               device=self.device)  # tensor made of weights
         if bias:
-            self._bias = rand((1, out_neurons), use_grad=True, device=self.device)
+            self._bias = Tensor(data=np.random.uniform(-np.sqrt(1 / in_neurons), np.sqrt(1 / in_neurons),
+                                                       (1, out_neurons)), use_grad=True, device=self.device)
 
     def forward(self, inputs: Tensor) -> Tensor:
         if hasattr(self, '_bias'):

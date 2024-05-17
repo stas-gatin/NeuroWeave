@@ -166,17 +166,22 @@ def zeros_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
     return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
-def rand(*shape: int | tuple,
+def rand(shape: int | tuple,
          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Random values in a given shape."""
 
+    if isinstance(shape, int):
+        shape = (shape,)
     array = np.random.rand(*shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
-def randn(*shape: int | tuple,
+
+def randn(shape: int | tuple,
           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Random values in a given shape."""
 
+    if isinstance(shape, int):
+        shape = (shape,)
     array = np.random.randn(*shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 

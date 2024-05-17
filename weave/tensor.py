@@ -2,6 +2,7 @@ from typing import Any, Union
 import numpy as np
 import ctypes
 import re
+from weave._utils import HookManager
 import weave.cuda  # import cuda to allow Tensors to live on the GPU
 if weave.cuda.is_available():
     import cupy as cp  # we still require CuPy for transformations
@@ -26,10 +27,6 @@ class Tensor(np.ndarray):
         An object that represents in which device the tensor is allocated. Can be changed with Tensor.cpu() or
         Tensor.cuda().
     """
-
-    __iadd_hooks = 0
-    __isub_hooks = 0
-    __imul_hooks = 0
 
     def __new__(cls, shape=None, dtype=None, buffer=None, offset=0, strides=None, order=None, data=None,
                 _children=(), _op=None, use_grad: bool = False, device: Union['weave.cuda.Device', str] = 'cpu'):
@@ -61,6 +58,7 @@ class Tensor(np.ndarray):
         if use_grad:
             self._backward = lambda: None
         # We transform the Tensor objects to their ids to make them hashable and store them into a set
+        if _op == 'softmax': print(1, [id(child) for child in _children])
         self._prev = set(id(child) for child in _children)
         self._op = _op
         self._grad_enabled = use_grad
@@ -82,32 +80,6 @@ class Tensor(np.ndarray):
                 raise TypeError(f'Invalid data type for Tensor: {data.__class__.__name__}')
             # By using ellipsis indexing, we can refer to all the dimensions of the Tensor
             self[...] = data.get() if isinstance(data, cp.ndarray) else data
-
-    def _create_hooks(self, other, op) -> None:
-        match op:
-            case '+':
-                name = '__iadd_hook'
-            case '-':
-                name = '__isub_hook'
-            case '*':
-                name = '__imul_hook'
-            case _:
-                raise ValueError('Immediate not supported for this operation.')
-        globals()[f'{name}{Tensor.__iadd_hooks}'] = self.copy()
-        if isinstance(other, (np.ndarray, list, Tensor)):
-            self._prev = {id(globals()[f'{name}{Tensor.__iadd_hooks}']), id(other)}
-        else:
-            self._prev = {globals()[f'{name}{Tensor.__iadd_hooks}']}
-        setattr(Tensor, name, getattr(Tensor, name) + 1)
-
-    @staticmethod
-    def _eliminate_hooks() -> None:
-        hooks = ['__iadd_hook', '__isub_hook', '__imul_hook']
-        for name in hooks:
-            for var in globals().keys():
-                if name in var:
-                    del globals()[var]
-            setattr(Tensor, name, 0)
 
     def __add__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:  # transform organized data structures into Tensors
@@ -149,7 +121,7 @@ class Tensor(np.ndarray):
 
     def __iadd__(self, other: Any) -> "Tensor":
         out = self + other
-        self._create_hooks(other, '+')
+        HookManager.create_hooks(self, '+', alter=True, other=other)
         self._op = out._op
         self.grad = out.grad
         self.data = out.data
@@ -164,7 +136,7 @@ class Tensor(np.ndarray):
 
     def __isub__(self, other: Any) -> "Tensor":
         out = self + (-other)
-        self._create_hooks(other, '-')
+        HookManager.create_hooks(self, '-', alter=True, other=other)
         self._op = out._op
         self.grad = out.grad
         self.data = out.data
@@ -213,7 +185,7 @@ class Tensor(np.ndarray):
 
     def __imul__(self, other: Any) -> "Tensor":
         out = self * other
-        self._create_hooks(other, '*')
+        HookManager.create_hooks(self, '*', alter=True, other=other)
         self._op = out._op
         self.grad = out.grad
         self.data = out.data
@@ -400,6 +372,7 @@ class Tensor(np.ndarray):
         return self
 
     def log(self):
+        print(f'log: {id(self)}')
         if self.device == 'cpu':
             out = Tensor(data=np.log(self.data), _children=(self,), _op='log', use_grad=self._grad_enabled,
                          device=self.device)
@@ -515,11 +488,14 @@ class Tensor(np.ndarray):
             # tensor that the backward was called on.
             if id(t) not in visited:
                 visited.add(id(t))
+                print(t)
                 for child in t._prev:
+                    print(t._op, t._prev, ctypes.cast(child, ctypes.py_object))
                     build_topo(ctypes.cast(child, ctypes.py_object).value)
                 topo.append(t)
 
         build_topo(self)
+        print(topo)
         if self.shape == ():
             self.grad = 1.
         else:
