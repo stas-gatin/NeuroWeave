@@ -219,7 +219,7 @@ def arange(start_, stop_, step, dtype: str = None,
     array = np.arange(start_, stop_, step, dtype=dtype)
     return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
-
+1
 def dot(a, b, dtype: str = None, use_grad: bool = False,
         device: str = 'cpu') -> Tensor:
     """Dot product of two arrays."""
