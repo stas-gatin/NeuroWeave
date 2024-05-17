@@ -105,8 +105,12 @@ class Tensor(np.ndarray):
 
         def _backward():
             # backward pass for addition operations (gradient flows toward the children)
-            self.grad += Tensor(data=out.grad, device=self.device)
-            other.grad += Tensor(data=out.grad, device=other.device)
+            obj_list = [self, other]
+            for obj in obj_list:
+                if out.grad.shape != obj.shape:
+                    obj.grad += out.grad[1].unsqueeze(0)
+                else:
+                    obj.grad += out.grad
 
         if self._grad_enabled:
             out._backward = _backward
@@ -138,7 +142,7 @@ class Tensor(np.ndarray):
         HookManager.create_hooks(self, '-', alter=True, other=other)
         self._op = out._op
         self.grad = out.grad
-        self.data = out.data
+        self._data = out.data
         self._populate(out.data)
         return self
 
@@ -459,7 +463,7 @@ class Tensor(np.ndarray):
             if value is None:
                 self._data = np.asarray(self)
             else:
-                types = Union[np.ndarray, list, *weave._types, int, float]
+                types = Union[np.ndarray, list, *weave._types, int, float, Tensor]
                 self._data = value.get() if not isinstance(value, types) else np.asarray(value, dtype=self.dtype)
         else:
             if value is None:
@@ -486,7 +490,7 @@ class Tensor(np.ndarray):
             # tensor that the backward was called on.
             if id(t) not in visited:
                 visited.add(id(t))
-                # print(t._op)
+                print(t._op)
                 for child in t._prev:
                     build_topo(child)
                 topo.append(t)
@@ -497,7 +501,6 @@ class Tensor(np.ndarray):
         else:
             self.grad = (Tensor(self.shape, device=self.device) * 0) + 1  # We set the first tensor's gradient to 1
         for node in reversed(topo):
-            print(node._op)
             node._backward()  # Run the backwards function of all tensors in reverse
 
     def cpu(self):
