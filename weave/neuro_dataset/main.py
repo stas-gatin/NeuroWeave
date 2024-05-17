@@ -159,7 +159,9 @@ class Dataset:
         if self._file_type == 'csv':
             self._data = pd.read_csv(filepath_or_buffer=self._path,
                                      sep=self._sep, quotechar=self._quotechar)
-            return self._data
+        elif self._file_type == 'json':
+            self._data = pd.read_json(self._path)
+        return self._data
 
     def del_row(self, row: str | list = None):
         """
