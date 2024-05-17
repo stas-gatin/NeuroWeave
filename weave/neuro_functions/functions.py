@@ -44,6 +44,7 @@ __all__ = [
     'full',
     'full_like',
     'rand',
+    'randn',
     'eye',
     'linspace',
     'arange',
@@ -170,6 +171,13 @@ def rand(*shape: int | tuple,
     """Random values in a given shape."""
 
     array = np.random.rand(*shape)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
+
+def randn(*shape: int | tuple,
+          use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Random values in a given shape."""
+
+    array = np.random.randn(*shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
