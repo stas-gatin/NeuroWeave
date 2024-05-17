@@ -102,7 +102,6 @@ def ones(shape: int | tuple, dtype: str = None,
     """Return a new array of given shape and type, filled with ones."""
 
     array = np.ones(shape, dtype=dtype)
-    print(type(shape))
     return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
