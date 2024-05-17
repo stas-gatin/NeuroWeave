@@ -147,7 +147,7 @@ class Dataset:
         Returns:
             str: A string representation of the dataset (DataFrame).
         """
-        return pd.DataFrame(self._data)
+        return str(self._data)
 
     def load_dataset(self):
         """
