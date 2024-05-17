@@ -696,7 +696,7 @@ def max(ten: Tensor, axis: int = None, dtype: str = None,
         use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Return the maximum of an array or maximum along an axis."""
     if ten.device == 'cpu':
-        array = np.max(a=ten.data, axis=axis, dtype=dtype)
+        array = np.max(a=ten.data, axis=axis)
     else:
         array = cp.max(a=ten.data, axis=axis, dtype=dtype)
 
@@ -709,7 +709,7 @@ def min(ten: Tensor, axis: int = None, dtype: str = None,
     if ten.device == 'cpu':
         array = np.min(a=ten.data, axis=axis)
     else:
-        array = cp.min(a=ten.data, axis=axis)
+        array = cp.min(a=ten.data, axis=axis, dtype=dtype)
 
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
