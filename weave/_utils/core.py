@@ -44,3 +44,30 @@ class HookManager:
             for value in range(getattr(cls, name) - 1, -1, -1):
                 del globals()[f'{name}{value}']
             setattr(cls, name, 0)
+
+
+class MemorySet:
+    def __init__(self, *args):
+        self.content = {}
+        self._idx = 0
+        for arg in args:
+            if (key := id(arg)) not in self.content.keys():
+                self.content[key] = arg
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._idx < len(self.content):
+            value = list(self.content.values())[self._idx]
+            self._idx += 1
+            return value
+        raise StopIteration
+
+    def __repr__(self):
+        return f'MemorySet({self.content.__repr__()[1:-1]})'
+
+
+if __name__ == '__main__':
+    m = MemorySet([], 'a', 3242, {'sa': 4})
+    print(m)

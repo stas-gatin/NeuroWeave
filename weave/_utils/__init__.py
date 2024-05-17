@@ -1,1 +1,1 @@
-from .hooks import HookManager
+from .core import HookManager, MemorySet

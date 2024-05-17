@@ -305,7 +305,7 @@ def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False,
 
 def tensor(data: list, dtype: str = None, use_grad: bool = False,
            device: str = 'cpu') -> Tensor:
-    """Create an tensor from a data list."""
+    """Create a tensor from a data list."""
 
     return Tensor(data=data, dtype=dtype, use_grad=use_grad, device=device)
 

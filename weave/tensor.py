@@ -2,7 +2,7 @@ from typing import Any, Union
 import numpy as np
 import ctypes
 import re
-from weave._utils import HookManager
+from weave._utils import HookManager, MemorySet
 import weave.cuda  # import cuda to allow Tensors to live on the GPU
 if weave.cuda.is_available():
     import cupy as cp  # we still require CuPy for transformations
@@ -58,8 +58,7 @@ class Tensor(np.ndarray):
         if use_grad:
             self._backward = lambda: None
         # We transform the Tensor objects to their ids to make them hashable and store them into a set
-        if _op == 'softmax': print(1, [id(child) for child in _children])
-        self._prev = set(id(child) for child in _children)
+        self._prev = MemorySet(*[child for child in _children])
         self._op = _op
         self._grad_enabled = use_grad
 
@@ -372,7 +371,6 @@ class Tensor(np.ndarray):
         return self
 
     def log(self):
-        print(f'log: {id(self)}')
         if self.device == 'cpu':
             out = Tensor(data=np.log(self.data), _children=(self,), _op='log', use_grad=self._grad_enabled,
                          device=self.device)
@@ -488,19 +486,18 @@ class Tensor(np.ndarray):
             # tensor that the backward was called on.
             if id(t) not in visited:
                 visited.add(id(t))
-                print(t)
+                # print(t._op)
                 for child in t._prev:
-                    print(t._op, t._prev, ctypes.cast(child, ctypes.py_object))
-                    build_topo(ctypes.cast(child, ctypes.py_object).value)
+                    build_topo(child)
                 topo.append(t)
 
         build_topo(self)
-        print(topo)
         if self.shape == ():
             self.grad = 1.
         else:
             self.grad = (Tensor(self.shape, device=self.device) * 0) + 1  # We set the first tensor's gradient to 1
         for node in reversed(topo):
+            print(node._op)
             node._backward()  # Run the backwards function of all tensors in reverse
 
     def cpu(self):
@@ -739,7 +736,7 @@ class Tensor(np.ndarray):
         return self.data.tolist()
 
     def trace(self, offset=0, axis1=0, axis2=1, dtype=None, out=None):
-        val =  self.data.trace(offset, axis1, axis2, dtype, out=out)
+        val = self.data.trace(offset, axis1, axis2, dtype, out=out)
         return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def transpose(self, *axes):

@@ -172,7 +172,6 @@ class Softmax(Model):
         self.dim = 1 if dim is None else dim
 
     def forward(self, x: Tensor) -> Tensor:
-        print(id(x))
         out = Tensor(data=(x.exp() / x.exp().sum(axis=self.dim).unsqueeze().T), _children=(x,), _op='softmax',
                      use_grad=x.grad_enabled, device=self.device)
 
