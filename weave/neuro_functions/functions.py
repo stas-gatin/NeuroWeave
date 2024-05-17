@@ -718,7 +718,7 @@ def convolve(ten1: Tensor, ten2: Tensor, mode: str = 'full',
              use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Returns the discrete, linear convolution of two one-dimensional sequences."""
     if ten1.device == 'cpu':
-        array = np.convolve(a=ten1.data, v=ten2.data, mode=mode)
+        array = np.convolve(a=ten1.data, v=ten2.data)
     else:
         array = cp.convolve(a=ten1.data, v=ten2.data, mode=mode)
 
