@@ -487,10 +487,31 @@ class ColumnTransformer:
     """
 
     def __init__(self, transformers):
+        """
+        Initializes the ColumnTransformer with the specified transformers.
+
+        Args:
+            transformers (list): A list of tuples specifying the transformers. Each tuple
+                                 should contain:
+                                 - name (str): The name of the transformer.
+                                 - transformer (object or callable): The transformer instance
+                                   (object with fit/transform methods) or a callable function.
+                                 - columns (str or list): The columns to which the transformer
+                                   should be applied.
+        """
         self.transformers = transformers
         self.fitted_transformers = {}
 
     def fit(self, X):
+        """
+        Fits all transformers to the dataset.
+
+        Args:
+            X (pd.DataFrame): The input dataset to fit the transformers.
+
+        Returns:
+            ColumnTransformer: The fitted ColumnTransformer instance.
+        """
         """Fits all transformers to the dataset."""
         for name, transformer, columns in self.transformers:
             if not callable(transformer):
@@ -501,7 +522,15 @@ class ColumnTransformer:
         return self
 
     def transform(self, X):
-        """Applies all fitted transformers to the dataset."""
+        """
+        Applies all fitted transformers to the dataset.
+
+        Args:
+            X (pd.DataFrame): The input dataset to transform.
+
+        Returns:
+            pd.DataFrame: The transformed dataset.
+        """
         X_transformed = X.data.copy()
         for name, transformer, columns in self.transformers:
             if isinstance(columns, str):
@@ -518,11 +547,30 @@ class ColumnTransformer:
         return X_transformed
 
     def fit_transform(self, X):
-        """Combines fit and transform into one method."""
+        """
+        Combines fit and transform into one method.
+
+        This method first fits all transformers to the data, and then applies the
+        transformations to the data.
+
+        Args:
+            X (pd.DataFrame): The input dataset to fit and transform.
+
+        Returns:
+            pd.DataFrame: The transformed dataset.
+        """
         return self.fit(X).transform(X)
 
     def inverse_transform(self, X):
-        """Inverse transforms the dataset back to the original scale."""
+        """
+        Inverse transforms the dataset back to the original scale.
+
+        Args:
+            X (pd.DataFrame): The transformed dataset to inverse transform.
+
+        Returns:
+            pd.DataFrame: The dataset transformed back to the original scale.
+        """
         X_inv_transformed = X.data.copy()
         for name, transformer, columns in self.transformers:
             if isinstance(columns, str):
