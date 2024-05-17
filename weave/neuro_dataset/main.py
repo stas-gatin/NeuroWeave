@@ -111,7 +111,7 @@ class Dataset:
 
         Attributes:
             self._path (str): The path to the dataset file.
-            self._file_type (str): The type of the file.
+            self._file_type (str): The type of the file (csv/json/excel/pickle).
             self._sep (str): The delimiter to use.
             self._quotechar (str): The character used to quote fields.
             self._data (pd.DataFrame): The loaded dataset as a pandas DataFrame.
@@ -159,7 +159,13 @@ class Dataset:
         if self._file_type == 'csv':
             self._data = pd.read_csv(filepath_or_buffer=self._path,
                                      sep=self._sep, quotechar=self._quotechar)
-            return self._data
+        elif self._file_type == 'json':
+            self._data = pd.read_json(self._path)
+        elif self._file_type == 'excel':
+            self._data = pd.read_excel(self._path)
+        elif self._file_type == 'pickle':
+            self._data = pd.read_pickle(self._path)
+        return self._data
 
     def del_row(self, row: str | list = None):
         """
