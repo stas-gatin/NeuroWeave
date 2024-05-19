@@ -1,7 +1,7 @@
 from typing import Any, Union
 import numpy as np
-import ctypes
 import re
+from weave._utils import HookManager, MemorySet  # import necessary classes to manage the garbage collector.
 import weave.cuda  # import cuda to allow Tensors to live on the GPU
 if weave.cuda.is_available():
     import cupy as cp  # we still require CuPy for transformations
@@ -26,10 +26,6 @@ class Tensor(np.ndarray):
         An object that represents in which device the tensor is allocated. Can be changed with Tensor.cpu() or
         Tensor.cuda().
     """
-
-    __iadd_hooks = 0
-    __isub_hooks = 0
-    __imul_hooks = 0
 
     def __new__(cls, shape=None, dtype=None, buffer=None, offset=0, strides=None, order=None, data=None,
                 _children=(), _op=None, use_grad: bool = False, device: Union['weave.cuda.Device', str] = 'cpu'):
@@ -60,8 +56,7 @@ class Tensor(np.ndarray):
         # We only store the data for the backward functions if use_grad is enabled
         if use_grad:
             self._backward = lambda: None
-        # We transform the Tensor objects to their ids to make them hashable and store them into a set
-        self._prev = set(id(child) for child in _children)
+            self._prev = MemorySet(*[child for child in _children])
         self._op = _op
         self._grad_enabled = use_grad
 
@@ -83,32 +78,6 @@ class Tensor(np.ndarray):
             # By using ellipsis indexing, we can refer to all the dimensions of the Tensor
             self[...] = data.get() if isinstance(data, cp.ndarray) else data
 
-    def _create_hooks(self, other, op) -> None:
-        match op:
-            case '+':
-                name = '__iadd_hook'
-            case '-':
-                name = '__isub_hook'
-            case '*':
-                name = '__imul_hook'
-            case _:
-                raise ValueError('Immediate not supported for this operation.')
-        globals()[f'{name}{Tensor.__iadd_hooks}'] = self.copy()
-        if isinstance(other, (np.ndarray, list, Tensor)):
-            self._prev = {id(globals()[f'{name}{Tensor.__iadd_hooks}']), id(other)}
-        else:
-            self._prev = {globals()[f'{name}{Tensor.__iadd_hooks}']}
-        setattr(Tensor, name, getattr(Tensor, name) + 1)
-
-    @staticmethod
-    def _eliminate_hooks() -> None:
-        hooks = ['__iadd_hook', '__isub_hook', '__imul_hook']
-        for name in hooks:
-            for var in globals().keys():
-                if name in var:
-                    del globals()[var]
-            setattr(Tensor, name, 0)
-
     def __add__(self, other: Any) -> "Tensor":
         if type(other) in [np.ndarray, list]:  # transform organized data structures into Tensors
             other = Tensor(data=other, use_grad=self._grad_enabled, device=self.device)
@@ -129,15 +98,20 @@ class Tensor(np.ndarray):
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: '\
                                             f'{self.device} and {other.device}.'
         # We relay on NumPy to handle the actual arithmetic operations
-        out = Tensor(data=(self.data + other.data), _children=(self, other), _op='+', use_grad=self._grad_enabled,
-                     device=self.device)
+        enable_grad = self._grad_enabled and other.grad_enabled
+        out = Tensor(data=(self.data + other.data), _children=(self, other), _op='+',
+                     use_grad=self._grad_enabled, device=self.device)
 
         def _backward():
             # backward pass for addition operations (gradient flows toward the children)
-            self.grad += Tensor(data=out.grad, device=self.device)
-            other.grad += Tensor(data=out.grad, device=other.device)
+            obj_list = [self, other]
+            for obj in obj_list:
+                if out.grad.shape != obj.shape:
+                    obj.grad += out.grad[1].unsqueeze(0)
+                else:
+                    obj.grad += out.grad
 
-        if self._grad_enabled:
+        if enable_grad:
             out._backward = _backward
         return out
 
@@ -148,8 +122,10 @@ class Tensor(np.ndarray):
         return self + other
 
     def __iadd__(self, other: Any) -> "Tensor":
+        enable_grad = self._grad_enabled and other.grad_enabled
         out = self + other
-        self._create_hooks(other, '+')
+        if enable_grad:
+            HookManager.create_hooks(self, '+', alter=True, other=other)
         self._op = out._op
         self.grad = out.grad
         self.data = out.data
@@ -163,11 +139,13 @@ class Tensor(np.ndarray):
         return (-self) + other
 
     def __isub__(self, other: Any) -> "Tensor":
+        enable_grad = self._grad_enabled and other.grad_enabled
         out = self + (-other)
-        self._create_hooks(other, '-')
+        if enable_grad:
+            HookManager.create_hooks(self, '-', alter=True, other=other)
         self._op = out._op
         self.grad = out.grad
-        self.data = out.data
+        self._data = out.data
         self._populate(out.data)
         return self
 
@@ -190,7 +168,8 @@ class Tensor(np.ndarray):
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(self.data * other.data), _children=(self, other), _op='*', use_grad=self._grad_enabled,
+        enable_grad = (self._grad_enabled and other.grad_enabled)
+        out = Tensor(data=(self.data * other.data), _children=(self, other), _op='*', use_grad=enable_grad,
                      device=self.device)
 
         def _backward():
@@ -204,7 +183,7 @@ class Tensor(np.ndarray):
             self._grad_enabled = True
             other._grad_enabled = True
 
-        if self._grad_enabled:
+        if enable_grad:
             out._backward = _backward
         return out
 
@@ -212,8 +191,10 @@ class Tensor(np.ndarray):
         return self * other
 
     def __imul__(self, other: Any) -> "Tensor":
+        enable_grad = self._grad_enabled and other.grad_enabled
         out = self * other
-        self._create_hooks(other, '*')
+        if enable_grad:
+            HookManager.create_hooks(self, '*', alter=True, other=other)
         self._op = out._op
         self.grad = out.grad
         self.data = out.data
@@ -243,7 +224,8 @@ class Tensor(np.ndarray):
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(self.data ** other.data), _children=(self, other), _op='**', use_grad=self._grad_enabled,
+        enable_grad = self._grad_enabled and other.grad_enabled
+        out = Tensor(data=(self.data ** other.data), _children=(self, other), _op='**', use_grad=enable_grad,
                      device=self.device)
 
         def _backward():
@@ -255,7 +237,7 @@ class Tensor(np.ndarray):
             self._grad_enabled = True
             other._grad_enabled = True
 
-        if self._grad_enabled:
+        if enable_grad:
             out._backward = _backward
         return out
 
@@ -299,7 +281,8 @@ class Tensor(np.ndarray):
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(self.data / other.data), _children=(self, other), _op='/', use_grad=self._grad_enabled,
+        enable_grad = self._grad_enabled and other.grad_enabled
+        out = Tensor(data=(self.data / other.data), _children=(self, other), _op='/', use_grad=enable_grad,
                      device=self.device)
 
         def _backward():
@@ -311,7 +294,7 @@ class Tensor(np.ndarray):
             self._grad_enabled = True
             other._grad_enabled = True
 
-        if self._grad_enabled:
+        if enable_grad:
             out._backward = _backward
         return out
 
@@ -351,7 +334,8 @@ class Tensor(np.ndarray):
 
         assert self.device == other.device, 'Expected both tensors to be on the same device, but found two: ' \
                                             f'{self.device} and {other.device}.'
-        out = Tensor(data=(self.data @ other.data), _children=(self, other), _op='@', use_grad=self._grad_enabled,
+        enable_grad = self._grad_enabled and other.grad_enabled
+        out = Tensor(data=(self.data @ other.data), _children=(self, other), _op='@', use_grad=enable_grad,
                      device=self.device)
 
         def _backward():
@@ -379,7 +363,7 @@ class Tensor(np.ndarray):
                     res = following.data.T @ out.grad.data
                     current.grad += Tensor(data=res, device=out.device)
 
-        if self._grad_enabled:
+        if enable_grad:
             out._backward = _backward
         return out
 
@@ -400,6 +384,9 @@ class Tensor(np.ndarray):
         return self
 
     def log(self):
+        """
+        Calculate the natural logarithm of the tensor elementwise.
+        """
         if self.device == 'cpu':
             out = Tensor(data=np.log(self.data), _children=(self,), _op='log', use_grad=self._grad_enabled,
                          device=self.device)
@@ -488,7 +475,7 @@ class Tensor(np.ndarray):
             if value is None:
                 self._data = np.asarray(self)
             else:
-                types = Union[np.ndarray, list, *weave._types, int, float]
+                types = Union[np.ndarray, list, *weave._types, int, float, Tensor]
                 self._data = value.get() if not isinstance(value, types) else np.asarray(value, dtype=self.dtype)
         else:
             if value is None:
@@ -499,13 +486,33 @@ class Tensor(np.ndarray):
 
     @property
     def T(self):
+        """
+        Transposes all dimensions of the tensor.
+        """
         return self.transpose()
 
     @property
+    def mT(self):
+        """
+        Transposes last two dimensions of the tensor.
+        """
+        if self.ndim >= 2:
+            return self._last_transposed()
+        raise ValueError(f"Tensor must have two dimensions or more to perform this operation.")
+
+    @property
     def grad_enabled(self) -> bool:
+        """
+        Returns True if the gradient is enabled for the tensor, False otherwise.
+        """
         return self._grad_enabled
 
     def backward(self):
+        """
+        Performs the backpropagation algorithm from the tensor is being called on through all the tensors that were
+        involved on the computations that resulted in it. Calculates the gradients of all tensors based on the
+        operations they performed.
+        """
         # Backpropagation algorithm to traverse the operation graph that we have built with each mathematical operation
         topo = []
         visited = set()
@@ -516,7 +523,7 @@ class Tensor(np.ndarray):
             if id(t) not in visited:
                 visited.add(id(t))
                 for child in t._prev:
-                    build_topo(ctypes.cast(child, ctypes.py_object).value)
+                    build_topo(child)
                 topo.append(t)
 
         build_topo(self)
@@ -528,11 +535,17 @@ class Tensor(np.ndarray):
             node._backward()  # Run the backwards function of all tensors in reverse
 
     def cpu(self):
+        """
+        Transfers the tensor and all its attributes to the CPU memory if not already in it.
+        """
         if not (self.device == 'cpu'):
             self.device = weave.cuda.Device('cpu')
             self.data = self.data.get()
 
     def cuda(self):
+        """
+        Transfers the tensor and all its attributes to the GPU memory if not already in it.
+        """
         if self.device == 'cpu':
             self.device = weave.cuda.Device('cuda')
             self.data = cp.asarray(self.data)
@@ -548,36 +561,64 @@ class Tensor(np.ndarray):
         return abs(self)
 
     def astype(self, dtype, order='K', casting='unsafe', subok=True, copy=True):
+        """
+        Returns a copy of the tensor with its dtype changed to that of the input.
+        """
         self.data = self.data.astype(dtype, order, copy=copy)
 
     def all(self, axis=None, out=None, keepdims=False, *, where=True):
+        """
+        Returns True if all elements evaluate to True.
+        """
         if self.device == 'cpu':
             return self.data.all()
         raise NotImplementedError('Cannot perform this operation on tensors on the GPU.')
 
     def any(self, axis=None, out=None, keepdims=False, *, where=True):
+        """
+        Returns True if any of the elements evaluate to True.
+        """
         if self.device == 'cpu':
             return self.data.any()
         raise NotImplementedError('Cannot perform this operation on tensors on the GPU.')
 
     def sort(self, axis=-1, kind=None, order=None):
+        """
+        Sort the elements of the tensor in place.
+        """
         self.data = self.data.sort(axis, kind, order)
 
     def argmax(self, axis=None, out=None, *, keepdims=False):
+        """
+        Returns the indices of the maximum values along a given axis.
+        """
         return Tensor(data=self.data.argmax(), dtype=int, device=self.device)
 
     def argmin(self, axis=None, out=None, *, keepdims=False):
+        """
+        Returns the indices of the minimum values along a given axis.
+        """
         return Tensor(data=self.data.argmin(), dtype=int, device=self.device)
 
     def argsort(self, axis=-1, kind=None, order=None):
+        """
+        Returns the indices that would sort this tensor.
+        """
         return Tensor(data=self.data.argsort(), device=self.device)
 
     def argpartition(self, kth, axis=-1, kind=None, order=None):
+        """
+        Returns the indices that would partition this tensor. Currently only supported for tensors in the CPU.
+        """
         if self.device == 'cpu':
             return Tensor(data=self.data.argpartition(kth), device=self.device)
         raise NotImplementedError('Cannot perform this operation on tensors on the GPU.')
 
     def byteswap(self, inplace=...):
+        """
+        Swap the bytes of the tensor elements, switching between small and big endian. Currently only supported for
+        tensors in the CPU.
+        """
         if self.device == 'cpu':
             return Tensor(data=self.data.byteswap(), device=self.device)
         raise NotImplementedError('Cannot perform this operation on tensors on the GPU.')
@@ -586,54 +627,98 @@ class Tensor(np.ndarray):
         raise NotImplementedError('This operation is not implemented for the Tensor class.')
 
     def clip(self, min: int | None = None, max: int | None = None, out=None, **kwargs):
+        """
+        Returns a tensor with its values limited to those in the range [min, max].
+        """
         return Tensor(data=self.data.clip(min, max, out, **kwargs), device=self.device)
 
     def compress(self, a, axis=None, out=None):
+        """
+        Return the selected slices if the tensor along a given axis.
+        """
         return Tensor(data=self.data.compress(a, axis, out), device=self.device)
 
     def conjugate(self):
+        """
+        Return the elementwise conjugate of the tensor.
+        """
         return Tensor(data=self.data.conjugate(), device=self.device)
 
     def conj(self):
+        """
+        Alias for Tensor.conjugate().
+        """
         return self.conjugate()
 
     def copy(self, order='C'):
-        return Tensor(data=self.data.copy(order), _children=self._prev, _op=self._op, dtype=self.dtype,
-                      use_grad=self._grad_enabled, device=self.device)
+        """
+        Returns a copy of the array with all its elements.
+        """
+        if hasattr(self, '_prev'):
+            return Tensor(data=self.data.copy(order), _children=self._prev, _op=self._op, dtype=self.dtype,
+                          use_grad=self._grad_enabled, device=self.device)
+        else:
+            return Tensor(data=self.data.copy(order), _op=self._op, dtype=self.dtype, use_grad=self._grad_enabled,
+                          device=self.device)
 
     def cumprod(self, axis=None, dtype=None, out=None):
+        """
+        Returns the cumulative product of the elements of the tensor along a given axis.
+        """
         return Tensor(data=self.data.cumprod(axis, dtype, out), dtype=self.dtype, device=self.device)
 
     def cumsum(self, axis=None, dtype=None, out=None):
+        """
+        Returns the cumulative sum of the elements of the tensor along a given axis.
+        """
         return Tensor(data=self.data.cumsum(axis, dtype, out), dtype=self.dtype, device=self.device)
 
     def diagonal(self, offset=0, axis1=0, axis2=1):
+        """
+        Returns the diagonal of the elements of the tensor by a given offset and axis.
+        """
         return Tensor(data=self.data.diagonal(offset, axis1, axis2), dtype=self.dtype, device=self.device)
 
     def diag(self, offset=0, axis1=0, axis2=1):
+        """
+        Alias of Tensor.diagonal()
+        """
         return self.diagonal(offset, axis1, axis2)
 
     def dot(self, b: "Tensor", out=None):
+        """
+        Returns the dot product of two tensors.
+        """
         return Tensor(data=self.data.dot(b.data), use_grad=self._grad_enabled, device=self.device)
 
     def fill(self, value):
+        """
+        Fills the tensor with a provided scalar value.
+        """
         new = self.data
         new.fill(value)
         return Tensor(data=new, use_grad=self._grad_enabled, device=self.device)
 
-    def flatten(self, order='C') -> "Tensor":
-        val = np.expand_dims(self.data.flatten(), axis=0) if isinstance(self.data, np.ndarray) else \
-              cp.expand_dims(self.data.flatten(), axis=0)
-        out = Tensor(data=val, _children=(self,), _op='flat', use_grad=self._grad_enabled, device=self.device)
-
-        def _backward():
-            self.grad += out.grad.reshape(self.shape)
-
-        if self._grad_enabled:
-            out._backward = _backward
+    def flatten(self, start_dim: int = 0, end_dim: int = -1, order='C') -> "Tensor":
+        """
+        Flattens the tensor starting at `start_dim` and ending at `end_dim'. If no arguments are provided it will
+        flatten the tensor along all dimensions.
+        """
+        shape = []
+        for i in self.shape[:start_dim]:
+            shape.append(i)
+        flattened_dim = np.prod(self.shape[start_dim:end_dim + 1])
+        shape.append(flattened_dim)
+        for i in self.shape[end_dim + 1: self.ndim]:
+            shape.append(i)
+        print(shape)
+        out = self.reshape(shape)
         return out
 
     def reshape(self, shape, /, *, order='C'):
+        """
+        Returns a tensor with the given shape.
+        """
         out = Tensor(data=self.data.reshape(shape, order=order), _children=(self,), _op='reshape',
                      use_grad=self._grad_enabled, device=self.device)
 
@@ -645,11 +730,18 @@ class Tensor(np.ndarray):
         return out
 
     def getfield(self, dtype, offset=0):
+        """
+        Returns a field view fo the real or complex parts of a tensor given its offset. Currently only supported for
+        tensors in the CPU.
+        """
         if self.device == 'cpu':
             return Tensor(data=self.data.getfield(dtype, offset), use_grad=self._grad_enabled, device=self.device)
         raise NotImplementedError('This operation is not implemented for the Tensor class.')
 
     def itemset(self, *args):
+        """
+        Insert a scalar into the tensor at the specified location.
+        """
         if self.device == 'cpu':
             val = self.data
             val.itemset(*args)
@@ -661,10 +753,16 @@ class Tensor(np.ndarray):
             return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def max(self, axis=None, out=None, keepdims=False, initial=None, where=True):
+        """
+        Return the maximum value along a given axis.
+        """
         return Tensor(data=self.data.max(axis, out, keepdims), use_grad=self._grad_enabled,
                       device=self.device)
 
     def mean(self, axis=None, dtype=None, out=None, keepdims=False, *, where=True):
+        """
+        Returns the average of the tensor elements along a given axis.
+        """
         out = Tensor(data=self.data.mean(axis, dtype, out, keepdims), _children=(self,), _op='mean',
                      use_grad=self._grad_enabled, device=self.device)
 
@@ -687,33 +785,60 @@ class Tensor(np.ndarray):
         return out
 
     def min(self, axis=None, out=None, keepdims=False, initial=None, where=True):
+        """
+        Returns the minimum value along a given axis.
+        """
         return Tensor(data=self.data.min(axis, out, keepdims), use_grad=self._grad_enabled, device=self.device)
 
     def nonzero(self):
+        """
+        Returns the indices of all non-zero elements of the tensor.
+        """
         non_zero_tuple = self.data.nonzero()
         return tuple(map(lambda x: Tensor(data=x, use_grad=self._grad_enabled, device=self.device), non_zero_tuple))
 
     def prod(self, axis=None, dtype=None, out=None, keepdims=False, initial=None, where=True):
+        """
+        Returns the product of the elements of the tensor along a given axis.
+        """
         return Tensor(data=self.data.prod(axis, dtype, out, keepdims), use_grad=self._grad_enabled, device=self.device)
 
     def ptp(self, axis=None, out=None, keepdims=False):
+        """
+        Returns the difference between the minimum and maximum elements of the tensor along a given axis.
+        """
         return Tensor(data=self.data.ptp(axis, out, keepdims), use_grad=self._grad_enabled, device=self.device)
 
     def put(self, ind, v, mode='raise'):
+        """
+        Sets the elements of the tensor to those provided in the inputted locations.
+        """
         val = self.data
         val.put(ind, v, mode=mode)
         self.data = val
 
     def ravel(self, order='C'):
+        """
+        Returns a flattened array.
+        """
         return Tensor(data=self.data.ravel(order), use_grad=self._grad_enabled, device=self.device)
 
     def repeat(self, repeats, axis=None):
+        """
+        Repeats the elements of the tensor a 'repeats' number of times along a given axis.
+        """
         return Tensor(data=self.data.repeat(repeats, axis), use_grad=self._grad_enabled, device=self.device)
 
     def round(self, decimals=0, out=None):
+        """
+        Rounds all the elements of the tensor to a given number of decimals.
+        """
         return Tensor(data=self.data.round(decimals, out), use_grad=self._grad_enabled, device=self.device)
 
     def squeeze(self, axis=0) -> "Tensor":
+        """
+        Removes axis of length one from the tensor. Default of 0.
+        """
         try:
             out = Tensor(data=self.data.squeeze(axis), use_grad=self._grad_enabled, device=self.device)
             if not isinstance(self.grad, int):
@@ -723,6 +848,9 @@ class Tensor(np.ndarray):
         return out
 
     def unsqueeze(self, axis=0) -> "Tensor":
+        """
+        Adds axis of length 1 to the tensor in the given axis. Default of 0.
+        """
         val = np.expand_dims(self.data, axis=axis) if isinstance(self.data, np.ndarray) else \
               cp.expand_dims(self.data, axis=axis)
         out = Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
@@ -733,10 +861,16 @@ class Tensor(np.ndarray):
         return out
 
     def std(self, axis=None, dtype=None, out=None, ddof=0, keepdims=False, *, where=True):
+        """
+        Computes the standard deviation of the elements of the tensor along a given axis.
+        """
         val = self.data.std(axis=axis, dtype=dtype, out=out, ddof=ddof, keepdims=keepdims)
         return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def sum(self, axis=None, dtype=None, out=None, keepdims=False, initial=None, where=True):
+        """
+        Returns the sum of the elements of the tensor along a given axis. If no axis is provided, it adds all elements.
+        """
         val = self.data.sum(axis=axis, dtype=dtype, out=out, keepdims=keepdims)
         out = Tensor(data=val, _children=(self,), _op='sum', use_grad=self._grad_enabled, device=self.device)
 
@@ -756,17 +890,29 @@ class Tensor(np.ndarray):
         return out
 
     def take(self, indices, axis=None, out=None, mode='raise'):
+        """
+        Extracts the elements of the tensor on the given indices.
+        """
         return Tensor(data=self.data.take(indices, axis=axis, out=out), use_grad=self._grad_enabled,
                       device=self.device)
 
     def tolist(self) -> list:
+        """
+        Returns the elements of the tensor as a list.
+        """
         return self.data.tolist()
 
     def trace(self, offset=0, axis1=0, axis2=1, dtype=None, out=None):
-        val =  self.data.trace(offset, axis1, axis2, dtype, out=out)
+        """
+        Return the sum along the diagonal of the tensor.
+        """
+        val = self.data.trace(offset, axis1, axis2, dtype, out=out)
         return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def transpose(self, *axes):
+        """
+        Transposes the elements of the tensor along the given axes. By default, it transposes all dimensions of the tensor.
+        """
         out = Tensor(data=self.data.transpose(*axes), _children=(self,), _op='T', use_grad=self._grad_enabled,
                      device=self.device)
 
@@ -777,13 +923,34 @@ class Tensor(np.ndarray):
             out._backward = _backward
         return out
 
+    def _last_transposed(self):
+        if self.device == 'cpu':
+            array = np.einsum('...ij->...ji', self.data)
+        else:
+            array = cp.einsum('...ij->...ji', self.data)
+        out = Tensor(data=array, use_grad=self._grad_enabled, device=self.device)
+
+        def _backward():
+            if self.device == 'cpu':
+                ans = np.einsum('...ij->...ji', out.grad)
+            else:
+                ans = cp.einsum('...ij->...ji', out.grad)
+            self.grad += ans
+
+        if self._grad_enabled:
+            out._backward = _backward
+        return out
+
     def var(self, axis=None, dtype=None, out=None, ddof=0, keepdims=False, *, where=True):
+        """
+        Returns the variance of the elements of the tensor along a given axis.
+        """
         val = self.data.var(axis, dtype, out, ddof, keepdims)
         return Tensor(data=val, use_grad=self._grad_enabled, device=self.device)
 
     def __getitem__(self, idx: int | slice | tuple):
         if isinstance(idx, (int, slice)):
-            return Tensor(data=self.data[idx])
+            return Tensor(data=self.data[idx], use_grad=self._grad_enabled, device=self.device)
         elif isinstance(idx, tuple):
             try:  # manage in case we are indexing a number
                 r = float(self.data[idx])
@@ -791,11 +958,14 @@ class Tensor(np.ndarray):
                 r = self.data[idx]
             return Tensor(data=r)
         elif isinstance(idx, (list, np.ndarray)):
-            return Tensor(data=self.data[tuple(idx)])
+            return Tensor(data=self.data[tuple(idx)], use_grad=self._grad_enabled, device=self.device)
         else:
             raise TypeError(f"Invalid index type: {type(idx)}")
 
     def view(self):
+        """
+        Returns a view of the tensor, sharing the same data.
+        """
         out = Tensor(data=self.data.view(), use_grad=self._grad_enabled, device=self.device)
         out._prev = self._prev
         out._op = self._op

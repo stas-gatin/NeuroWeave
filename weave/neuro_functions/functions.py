@@ -95,6 +95,8 @@ __all__ = [
     'min',
     'convolve',
     'sign',
+    'sqrt',
+    'uniform',
 ]
 
 
@@ -166,17 +168,22 @@ def zeros_like(tensor_like: Tensor, shape: int | tuple, dtype: str = None,
     return Tensor(data=array, dtype=dtype, use_grad=use_grad, device=device)
 
 
-def rand(*shape: int | tuple,
+def rand(shape: int | tuple,
          use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Random values in a given shape."""
 
+    if isinstance(shape, int):
+        shape = (shape,)
     array = np.random.rand(*shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
-def randn(*shape: int | tuple,
+
+def randn(shape: int | tuple,
           use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Random values in a given shape."""
 
+    if isinstance(shape, int):
+        shape = (shape,)
     array = np.random.randn(*shape)
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
@@ -308,7 +315,7 @@ def any(x, axis=None, out=None, keepdims=False, use_grad: bool = False,
 
 def tensor(data: list, dtype: str = None, use_grad: bool = False,
            device: str = 'cpu') -> Tensor:
-    """Create an tensor from a data list."""
+    """Create a tensor from a data list."""
 
     return Tensor(data=data, dtype=dtype, use_grad=use_grad, device=device)
 
@@ -751,6 +758,18 @@ def sign(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
+def sqrt(ten: Tensor, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """Returns the non-negative square root of a tensor."""
+    if ten.device == 'cpu':
+        array = np.sqrt(ten.data)
+    else:
+        array = cp.sqrt(ten.data)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-
+def uniform(low: int, high: int, shape: tuple, use_grad: bool = False, device: str = 'cpu') -> Tensor:
+    """
+    Creates a tensor with the specified shape from a sampled uniform distribution in the range [low, high).
+    """
+    array = np.random.uniform(low, high, size=shape)
+    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
