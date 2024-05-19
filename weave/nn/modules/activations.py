@@ -2,10 +2,19 @@ import math
 import numpy as np
 from weave import Tensor, diag, outer, vstack
 from .model import Model
-from weave._utils import HookManager
 
 
 class ReLU(Model):
+    """
+    Applies the Rectified Linear Unit activation function over the inputs. The ReLU function is described as:
+    ReLU(X) = max(0, X)
+    Where X is the input to the ReLU function.
+
+    Methods
+    -----------------------------------------------
+    forward(input: Tensor)
+        Applies the ReLU function over the inputs.
+    """
     def __init__(self):
         super().__init__()
 
@@ -27,6 +36,16 @@ class ReLU(Model):
 
 
 class Sigmoid(Model):
+    """
+    Applies the Sigmoid activation function over the inputs. The Sigmoid function is described as:
+    Sigmoid(X) = 1 / (1 + exp(-X))
+    Where X is the input to the Sigmoid function.
+
+    Methods
+    -----------------------------------------------
+    forward(input: Tensor)
+        Applies the Sigmoid function over the inputs.
+    """
     def __init__(self):
         super().__init__()
 
@@ -49,6 +68,16 @@ class Sigmoid(Model):
 
 
 class Tanh(Model):
+    """
+    Applies the Hyperbolic Tangent function over the inputs. Tanh is defined as:
+    Tanh(X) = exp(X) - exp(-X) / exp(X) + exp(-X)
+    Where X is the input to the Tanh function.
+
+    Methods
+    -----------------------------------------------
+    forward(input: Tensor)
+        Applies the Tanh function over the inputs.
+    """
     def __init__(self):
         super().__init__()
 
@@ -70,7 +99,17 @@ class Tanh(Model):
         return 'Tanh()'
 
 
-class GeLU(Model):
+class GELU(Model):
+    """
+    Applies the Gaussian Error Linear Unit over the inputs. The GELU function is defined as:
+    GELU(X) = 0.5 * X * (1 + erf(X / sqrt(2)))
+    where X is the input to the GeLU function.
+
+    Methods
+    -----------------------------------------------
+    forward(input: Tensor)
+        Applies the GELU function over the inputs.
+    """
     def __init__(self):
         super().__init__()
         self.tanh = Tanh()
@@ -96,10 +135,25 @@ class GeLU(Model):
         return self.forward(x)
 
     def __repr__(self) -> str:
-        return 'GeLU()'
+        return 'GELU()'
 
 
 class LeakyReLU(Model):
+    """
+    Applies a leaky ReLU activation to the inputs. This activation function is defined as:
+    Leaky ReLU(X) = X if X > 0 else 0.01 * X
+    Where X is the input to the leaky ReLU function.
+
+    Parameters
+    -----------------------------------------------
+    down_slope: float
+        The amount of the original input to be preserved if the input is bellow 0.
+
+    Methods
+    -----------------------------------------------
+    forward(x: Tensor)
+        Applies the leaky ReLU function over the input.
+    """
     def __init__(self, down_slope: float = 0.01):
         super().__init__()
         self.down_slope = down_slope
@@ -123,6 +177,16 @@ class LeakyReLU(Model):
 
 
 class SiLU(Model):
+    """
+    Implementation of the SiLU activation function. This function is described as:
+    SiLU(X) = X / (1 + exp(-X))
+    Where X is the input to the SiLU function.
+
+    Methods
+    -----------------------------------------------
+    forward(x: Tensor)
+        Applies the SiLU function over the input.
+    """
     def __init__(self):
         super().__init__()
 
@@ -145,6 +209,16 @@ class SiLU(Model):
 
 
 class Gaussian(Model):
+    """
+    Applies the Gaussian activation function over the inputs. The Gaussian function is defined as:
+    Gaussian(X) = exp(-(X ** 2))
+    Where X is the input to the Gaussian function.
+
+    Methods
+    -----------------------------------------------
+    forward(x: Tensor)
+        Applies the Gaussian function over the input.
+    """
     def __init__(self):
         super().__init__()
 
@@ -167,6 +241,21 @@ class Gaussian(Model):
 
 
 class Softmax(Model):
+    """
+    Implementation of the Softmax activation function. The Softmax activation function is defined as:
+    Softmax(X) = exp(X_i) / Sum(exp(X_j))_(j = 1)
+    where X_i and X_j are indices to the different rows of X.
+
+    Parameters
+    -----------------------------------------------
+    dim: int
+        Dimension over which to apply the softmax function
+
+    Methods
+    -----------------------------------------------
+    forward(x: Tensor)
+        Applies the Softmax activation function over the input.
+    """
     def __init__(self, dim: int = None):
         super().__init__()
         self.dim = 1 if dim is None else dim
@@ -180,11 +269,12 @@ class Softmax(Model):
             if len(out.shape) > 1:
                 derivative = []
                 for i in range(out.shape[0]):
-                    d = out.grad @ (diag(out[i].squeeze()) - outer(out[i], out[i]))
+                    d = out.grad @ (diag(out[i].squeeze(), device=self.device) - outer(out[i], out[i],
+                                                                                       device=self.device))
                     derivative.append(d[i])
-                x.grad += vstack(tuple(derivative))
+                x.grad += vstack(tuple(derivative), device=self.device)
             else:
-                x.grad += out.grad @ (diag(out.squeeze()) - outer(out, out))
+                x.grad += out.grad @ (diag(out.squeeze(), device=self.device) - outer(out, out, device=self.device))
             out._grad_enabled = True
 
         if x.grad_enabled:

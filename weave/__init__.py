@@ -32,7 +32,7 @@ _types = [
     int8, int16, int32, int64, uint8, uint16, uint32, uint64,
 ]
 
-if weave.cuda.is_available():
+if weave.cuda.is_available():  # add only the available types based on the GPU availability status
     _types.extend(weave.cuda._types)
     _float_types.extend(weave.cuda._float_types)
 

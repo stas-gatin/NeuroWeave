@@ -2,6 +2,7 @@ import weave.nn
 from weave import Tensor
 from weave.cuda import Device
 import re
+import numpy as np
 
 
 # We created the base class for all models as well as its metaclass to run functions in the background
@@ -36,7 +37,6 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
                 value = getattr(self, attr)  # in order to call an attribute by using an str
             except AttributeError:
                 continue  # next for iteration
-
             else:
                 if isinstance(value, Tensor):
                     self._parameters[attr] = value
@@ -48,7 +48,7 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
             self._num_parameters += layer._num_parameters
 
     def data_dict(self):
-        model_dict = {'weights': [self._parameters]}
+        model_dict = {'weights': [*self.params()]}
         model_dict['config'] = {
             'name': self.__class__.__name__,
             'num_layers': len(self._layers),
@@ -65,14 +65,15 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
         m = cls(*args)  # classmethod is empty
 
         def rec_fill(obj, weights):
-            obj._parameters = weights
             obj._layers = {}
-            for name, value in weights.items():
+            for name, value in obj._parameters.items():
                 if isinstance(value, Tensor):
-                    setattr(obj, name, value)
+                    setattr(obj, name, weights[0])
+                    del weights[0]
                 elif isinstance(value, dict):
                     obj._layers[name] = getattr(obj, name)
-                    rec_fill(getattr(obj, name), value)
+                    rec_fill(getattr(obj, name), weights)
+        values: list = values['weights']
         rec_fill(m, values)
         return m
 
@@ -107,7 +108,7 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
                     param_list.append(value)
             elif isinstance(value, dict):
                 if op != 'get':
-                    getattr(self, name)._depth_call(op)
+                    getattr(getattr(self, name), op)()
                 else:
                     param_list.extend(getattr(self, name)._depth_call(op))
         if op == 'get':
