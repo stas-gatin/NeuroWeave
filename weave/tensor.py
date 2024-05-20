@@ -528,7 +528,7 @@ class Tensor(np.ndarray):
 
         build_topo(self)
         if self.shape == ():
-            self.grad = 1.
+            self.grad = Tensor(data=1., device=self.device)
         else:
             self.grad = (Tensor(self.shape, device=self.device) * 0) + 1  # We set the first tensor's gradient to 1
         for node in reversed(topo):
