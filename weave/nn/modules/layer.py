@@ -29,7 +29,6 @@ class LayerDense(Model):
     -----------------------------------------------
     forward(inputs: weave.Tensor)
         Applies a linear transformation to the inputs. The specific formula depends on whether bias is True or False.
-
     """
     def __init__(self, in_neurons: int, out_neurons: int, bias: bool = True):
         super().__init__()
@@ -40,7 +39,7 @@ class LayerDense(Model):
                                 use_grad=True, device=self.device)
 
     def forward(self, inputs: Tensor) -> Tensor:
-        if hasattr(self, '_bias'):
+        if hasattr(self, 'bias'):
             return inputs @ self.weights + self.bias
         return inputs @ self.weights
 
