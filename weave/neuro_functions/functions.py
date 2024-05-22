@@ -188,14 +188,6 @@ def randn(shape: int | tuple,
     return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
 
 
-def randn(*shape: int | tuple,
-          use_grad: bool = False, device: str = 'cpu') -> Tensor:
-    """Random values in a given shape."""
-
-    array = np.random.randn(*shape)
-    return Tensor(data=array, dtype=array.dtype, use_grad=use_grad, device=device)
-
-
 def eye(rows: int = None, columns: int = None, k: int = 0, dtype: str = None,
         use_grad: bool = False, device: str = 'cpu') -> Tensor:
     """Return a 2-D array with ones on the diagonal and zeros elsewhere."""
