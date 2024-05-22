@@ -44,8 +44,6 @@ class SGD(Optimizer):
 
     def step(self):
         for i, param in enumerate(self._params):
-            # self._mom_v[i] = self.momentum * self._mom_v[i] + (1 - self.momentum) * param.grad
-            # param -= self._lr * self._mom_v[i]
             self._mom_v[i] = self.momentum * self._mom_v[i] - self.lr * param.grad
             param += self._mom_v[i]
 
@@ -86,6 +84,7 @@ class RMSprop(Optimizer):
 
     def step(self):
         for i, param in enumerate(self._params):
+            # We use the formula for RMSprop to update the values of the model parameters
             self._mom_v[i]: Tensor = (self.momentum * self._mom_v[i]) + ((1 - self.momentum) * (param.grad ** 2))
             param -= self._lr * (param.grad / (sqrt(self._mom_v[i], device=param.device) + self.epsilon))
 
