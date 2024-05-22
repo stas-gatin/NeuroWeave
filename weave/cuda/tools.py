@@ -73,7 +73,7 @@ class Device:
 
 class NoCUDADevice:
     def __init__(self, device_type):
-        self._device_type, _ = device_type.split(':')
+        self._device_type = device_type.split(':')[0]
         if self._device_type.lower() == 'cuda':
             raise CUDANotAvailableError("CUDA drivers haven't been found. Cannot put tensors in a inaccessible device.")
         elif self._device_type.lower() == 'cpu':

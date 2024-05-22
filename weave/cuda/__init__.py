@@ -33,7 +33,10 @@ else:
 
 def is_available() -> bool:
     if not CUDA_IMPORT_FAILED:
-        return cp.cuda.is_available()
+        try:
+            return cp.cuda.is_available()
+        except cp.cuda.runtime.CUDARuntimeError:
+            return False
     return False
 
 
