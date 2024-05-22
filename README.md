@@ -6,41 +6,14 @@
 ![Static Badge](https://img.shields.io/badge/Version-v1.0.0-green)
 ![Static Badge](https://img.shields.io/badge/Colaboradores-5-blue)
 <img src="https://img.shields.io/static/v1?label=%F0%9F%8C%9F&message=If%20Useful&style=style=flat&color=BC4E99" alt="Star Badge"/>
-[![Star on GitHub](https://img.shields.io/github/stars/stas-gatin/stas-gatin.svg?style=social)](https://github.com/stas-gatin/NeuroWeave/stargazers)
-
-> [!NOTE]
-> The library is still under development!
-
-> [!TIP]
-> Helpful advice for doing things better or more easily.
+![GitHub Repo stars](https://img.shields.io/github/stars/stas-gatin/NeuroWeave)
 
 > [!IMPORTANT]
-> Key information users need to know to achieve their goal.
+> If you found a bug, please contact the repository creators.
 
-> [!WARNING]
-> Urgent info that needs immediate user attention to avoid problems.
+# FAQS
 
-> [!CAUTION]
-> Advises about risks or negative outcomes of certain actions.
-
-
-
-## Task list: <img src="https://media.giphy.com/media/WUlplcMpOCEmTGBtBW/giphy.gif" width="30">
-- [x] Encontrar como guardar modelos de redes neuronales (libreria h5py)
-- [ ] 1. Tensors
-  <details>
-    <summary>Click to expand more about Tensores</summary>
-    Tensors a fundamental data structure used in Machine Learning for multi-dimensional matrix operations.
-  </details>
-
-- [ ] 2. Clases para las capas que conforman los modelos (grande, podría ser dividido en varias personas, o no)
-- [x] 3. Guardado de modelos en un formato eficiente
-- [ ] 4. Cargado y preparado de datasets ocn clases (Datasets, Dataloaders)
-- [ ] 5. Visualización con Manim u otros (?)
-- [ ] 6. Métodos y clases para el manejo aritmético de Tensores
-- [ ] 7. Implementación de métodos con opción de ejecución el GPU (quizás, sobre consideración)
-
-## Docs:
+## How to save and load model?
 
 ### Load model
 
@@ -84,13 +57,9 @@ graph TD;
     neuro_storage-->saver(Saver);
     neuro_storage-->loader(Loader);
 
-    classDef in_process fill:#000,stroke:#ffff00,stroke-width:2px;
     classDef done fill:#000,stroke:#00ff00,stroke-width:2px;
-    classDef not_done fill:#000,stroke:#ff0000,stroke-width:2px;
 
-    class weave,nn,modules,network in_process;
-    class neuro_storage,saver,loader,neuro_dataset,random done;
-    class optim not_done;
+    class neuro_storage,saver,loader,neuro_dataset,random,weave,nn,modules,network,optim done;
 
 ```
 
@@ -112,13 +81,6 @@ Implementación de la clase del Tensor y todos sus métodos. Esta clase es esenc
 <!-- readme: collaborators -start -->
 <table>
 <tr>
-    <td align="center">
-        <a href="https://github.com/itprosta">
-            <img src="https://avatars.githubusercontent.com/u/81316740?v=4" width="100;" alt="itprosta"/>
-            <br />
-            <sub><b>ITPROSTA</b></sub>
-        </a>
-    </td>
     <td align="center">
         <a href="https://github.com/Shillianne">
             <img src="https://avatars.githubusercontent.com/u/148450883?v=4" width="100;" alt="Shillianne"/>
