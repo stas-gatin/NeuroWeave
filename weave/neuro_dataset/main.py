@@ -165,6 +165,21 @@ class Dataset:
             self._data = pd.read_excel(self._path)
         elif self._file_type == 'pickle':
             self._data = pd.read_pickle(self._path)
+        elif self._file_type == 'parquet':
+            self._data = pd.read_parquet(self._path)
+        elif self._file_type == 'hdf':
+            self._data = pd.read_hdf(self._path)
+        elif self._file_type == 'feather':
+            self._data = pd.read_feather(self._path)
+        elif self._file_type == 'stata':
+            self._data = pd.read_stata(self._path)
+        elif self._file_type == 'sas':
+            self._data = pd.read_sas(self._path)
+        elif self._file_type == 'spss':
+            self._data = pd.read_spss(self._path)
+        else:
+            raise ValueError(f"Unsupported file type: {self._file_type}")
+
         return self._data
 
     def del_row(self, row: str | list = None):
@@ -202,50 +217,6 @@ class Dataset:
         """
         return Dataset(path=self._path)
 
-    @staticmethod
-    def train_test_split(
-            data: pd.DataFrame,
-            x: list,
-            y: str,
-            test_size=0.2,
-            seed=1
-    ):
-        """
-        Splits the dataset into training and testing sets.
-
-        Args:
-            data (pd.DataFrame): The input dataset.
-            x (list): List of feature column names.
-            y (str): The target column name.
-            test_size (float): The proportion of the dataset to include in the test split, default is 0.2.
-            seed (int): Random seed for reproducibility, default is 1.
-
-        Returns:
-            tuple: Four arrays: X_train, X_test, y_train, y_test.
-        """
-        x = data[x[::]].values
-        y = data[y].values
-
-        # Checking for None values in x and y
-        if np.any(pd.isnull(x)) or np.any(pd.isnull(y)):
-            # Remove rows where any None values occur
-            valid_indices = ~np.isnan(x).any(axis=1) & ~np.isnan(y)
-            x = x[valid_indices]
-            y = y[valid_indices]
-
-        # Splitting the data into training and testing sets
-        num_data = len(x)
-        np.random.seed(seed)
-        shuffled_indices = np.random.permutation(num_data)
-        test_set_size = int(num_data * test_size)
-        test_indices = shuffled_indices[:test_set_size]
-        train_indices = shuffled_indices[test_set_size:]
-
-        x_train, x_test = x[train_indices], x[test_indices]
-        y_train, y_test = y[train_indices], y[test_indices]
-
-        return x_train, x_test, y_train, y_test
-
     @property
     def data(self):
         """
@@ -255,6 +226,50 @@ class Dataset:
             pd.DataFrame: The loaded dataset.
         """
         return self._data
+
+
+def train_test_split(
+        data: pd.DataFrame,
+        x: list,
+        y: str,
+        test_size=0.2,
+        seed=1
+):
+    """
+    Splits the dataset into training and testing sets.
+
+    Args:
+        data (pd.DataFrame): The input dataset.
+        x (list): List of feature column names.
+        y (str): The target column name.
+        test_size (float): The proportion of the dataset to include in the test split, default is 0.2.
+        seed (int): Random seed for reproducibility, default is 1.
+
+    Returns:
+        tuple: Four arrays: X_train, X_test, y_train, y_test.
+    """
+    x = data[x[::]].values
+    y = data[y].values
+
+    # Checking for None values in x and y
+    if np.any(pd.isnull(x)) or np.any(pd.isnull(y)):
+        # Remove rows where any None values occur
+        valid_indices = ~np.isnan(x).any(axis=1) & ~np.isnan(y)
+        x = x[valid_indices]
+        y = y[valid_indices]
+
+    # Splitting the data into training and testing sets
+    num_data = len(x)
+    np.random.seed(seed)
+    shuffled_indices = np.random.permutation(num_data)
+    test_set_size = int(num_data * test_size)
+    test_indices = shuffled_indices[:test_set_size]
+    train_indices = shuffled_indices[test_set_size:]
+
+    x_train, x_test = x[train_indices], x[test_indices]
+    y_train, y_test = y[train_indices], y[test_indices]
+
+    return x_train, x_test, y_train, y_test
 
 
 class StandardScaler:

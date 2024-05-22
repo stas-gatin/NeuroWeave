@@ -1,7 +1,7 @@
 from weave import Dataset
-from weave import StandardScaler, one_hot_encode, ColumnTransformer, label_encode
+from weave import StandardScaler, ColumnTransformer
+from weave import one_hot_encode, label_encode
 
-#
 
 # -- ColumnTransformer --
 
