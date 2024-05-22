@@ -8,6 +8,9 @@
 <img src="https://img.shields.io/static/v1?label=%F0%9F%8C%9F&message=If%20Useful&style=style=flat&color=BC4E99" alt="Star Badge"/>
 ![GitHub Repo stars](https://img.shields.io/github/stars/stas-gatin/NeuroWeave)
 
+NeuroWeave is a powerful and intuitive library for creating and training neural networks. With NeuroWeave, you can quickly build complex models, experiment with architectures, and adjust hyperparameters while maintaining control over the training process details.
+
+
 > [!IMPORTANT]
 > If you found a bug, please contact the repository creators.
 
@@ -40,7 +43,7 @@ weave.saver(model, file_path='path/to/save', overwrite=False)
 > [!WARNING]
 > Set overwrite=True to overwrite the model file.
 
-## Jerarquía de clases:
+# Jerarquía de clases:
 
 - ![#00ff00](https://placehold.co/15x15/00ff00/00ff00.png) `Done`
 - ![#ffff00](https://placehold.co/15x15/ffff00/ffff00.png) `In process`
@@ -76,7 +79,7 @@ Desarrollo de los métodos aritméticos para el manejo de tensores junto. Esta t
  
 Implementación de la clase del Tensor y todos sus métodos. Esta clase es esencial para la realización adecuada del resto de clases que trabajan con tensores, por lo que esta tarea la realizarán todos los integrantes del equipo para adquirir conocimiento de primera mano de su funcionamiento. 
 
-## Collaborators
+# Collaborators
 
 <!-- readme: collaborators -start -->
 <table>
