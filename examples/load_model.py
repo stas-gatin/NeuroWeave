@@ -1,4 +1,4 @@
-import neuroweave
+import weave
 
-model = neuroweave.load_model('my_model.h5')
+model = weave.load_model('my_model.h5')
 print(model)

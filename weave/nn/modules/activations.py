@@ -24,7 +24,7 @@ SOFTWARE.
 
 import math
 import numpy as np
-from neuroweave import Tensor, diag, outer, vstack
+from weave import Tensor, diag, outer, vstack
 from .model import Model
 
 
@@ -295,6 +295,8 @@ class Softmax(Model):
                 for i in range(out.shape[0]):
                     d = out.grad @ (diag(out[i].squeeze(), device=self.device) - outer(out[i], out[i],
                                                                                        device=self.device))
+                    if d.shape[0] == 1:
+                        d = d.squeeze()
                     derivative.append(d[i])
                 x.grad += vstack(tuple(derivative), device=self.device)
             else:

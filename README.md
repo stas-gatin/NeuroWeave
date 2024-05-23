@@ -43,30 +43,6 @@ weave.saver(model, file_path='path/to/save', overwrite=False)
 > [!WARNING]
 > Set overwrite=True to overwrite the model file.
 
-# Class hierarchy:
-
-- ![#00ff00](https://placehold.co/15x15/00ff00/00ff00.png) `Done`
-- ![#ffff00](https://placehold.co/15x15/ffff00/ffff00.png) `In process`
-- ![#ff0000](https://placehold.co/15x15/ff0000/ff0000.png) `Not started`
-
-```mermaid
-graph TD;
-    weave(Weave)-->neuro_storage(Neuro Storage);
-    weave-->neuro_dataset(Neuro Dataset);
-    weave-->optim(Optimization);
-    weave-->random(Neuro Functions);
-    weave-->nn(Neural Network);
-    weave-->visualization(Visualization);
-    nn-->modules(Modules);
-    neuro_storage-->saver(Saver);
-    neuro_storage-->loader(Loader);
-
-    classDef done fill:#000,stroke:#00ff00,stroke-width:2px;
-
-    class neuro_storage,saver,loader,neuro_dataset,random,weave,nn,modules,network,optim,visualization done;
-
-```
-
 ## Task distribution
 Implementación de las clases de capas que permitirán manipular los tensores dentro de los módulos de IA, permitiendo la funcionalidad esencial para que cualquier usuario pueda construir sus módulos personalizados. La tarea será realizada por Gabriel Niculescu Ruso y Carlos Molera Canals. Esto serían clases que conformarían lo esencial para transformar tensores según diferentes normas dentro de los distintos modelos de IA. Dada la gran diversidad de capas posibles y todas sus dependencias, esta tarea presenta gran cantidad de contenido para que ambos integrantes tengan múltiples clases que realizar.  
  
@@ -78,49 +54,4 @@ Visualización del proceso de aprendizaje de los módulos de IA hechos por los u
  
 Desarrollo de los métodos aritméticos para el manejo de tensores junto. Esta tarea será esencial para poder utilizar las propiedades matemáticas que tienen los tensores en el código que generemos, así como de dar funcionalidad esencial a los usuarios para que construyan sus propias clases con funcionalidad completa. Esta tarea será completada por Hugo Urbán Martínez en conjunto con Stanislav Gatin. 
  
-Implementación de la clase del Tensor y todos sus métodos. Esta clase es esencial para la realización adecuada del resto de clases que trabajan con tensores, por lo que esta tarea la realizarán todos los integrantes del equipo para adquirir conocimiento de primera mano de su funcionamiento. 
-
-# Collaborators
-
-<!-- readme: collaborators -start -->
-<table>
-<tr>
-    <td align="center">
-        <a href="https://github.com/Shillianne">
-            <img src="https://avatars.githubusercontent.com/u/148450883?v=4" width="100;" alt="Shillianne"/>
-            <br />
-            <sub><b>Shillianne</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/hugourmaz">
-            <img src="https://avatars.githubusercontent.com/u/149888695?v=4" width="100;" alt="hugourmaz"/>
-            <br />
-            <sub><b>Hugourmaz</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/CARLOSMOLERA">
-            <img src="https://avatars.githubusercontent.com/u/152264006?v=4" width="100;" alt="CARLOSMOLERA"/>
-            <br />
-            <sub><b>CARLOSMOLERA</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/paatriiperezz">
-            <img src="https://avatars.githubusercontent.com/u/152264650?v=4" width="100;" alt="paatriiperezz"/>
-            <br />
-            <sub><b>Patricia Pérez Ferre</b></sub>
-        </a>
-    </td>
-    <td align="center">
-        <a href="https://github.com/stas-gatin">
-            <img src="https://avatars.githubusercontent.com/u/155986458?v=4" width="100;" alt="stas-gatin"/>
-            <br />
-            <sub><b>Stanislav Gatin</b></sub>
-        </a>
-    </td></tr>
-</table>
-<!-- readme: collaborators -end -->
-
-
+Implementación de la clase del Tensor y todos sus métodos. Esta clase es esencial para la realización adecuada del resto de clases que trabajan con tensores, por lo que esta tarea la realizarán todos los integrantes del equipo para adquirir conocimiento de primera mano de su funcionamiento.

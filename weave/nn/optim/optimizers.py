@@ -1,4 +1,4 @@
-from neuroweave import Tensor, sqrt
+from weave import Tensor, sqrt
 from abc import ABC, abstractmethod
 
 

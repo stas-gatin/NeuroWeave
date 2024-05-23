@@ -1,7 +1,8 @@
-import neuroweave
+from weave import Tensor
+import weave.cuda
 import matplotlib.pyplot as plt
 import numpy as np
-if neuroweave.cuda.is_available():
+if weave.cuda.is_available():
     import cupy as cp
 
 
@@ -15,11 +16,11 @@ class WeaveWeights:
         Sets the weights of the neural network.
 
         Parameters:
-        weights (list of neuroweave.Tensor): List of weight tensors for each layer.
+        weights (list of weave.Tensor): List of weight tensors for each layer.
         layer_names (list of str): List of layer names.
         """
         # Check and extract the weights from the tensor
-        if all(isinstance(weight, weave.Tensor) for weight in weights):
+        if all(isinstance(weight, Tensor) for weight in weights):
             self.weights = [weight.data for weight in weights]
         else:
             raise ValueError('Weights must be part of the tensor')

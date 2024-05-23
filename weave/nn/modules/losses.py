@@ -23,7 +23,7 @@ SOFTWARE.
 """
 
 from .model import Model
-from neuroweave import Tensor
+from weave import Tensor
 from .activations import Softmax, Sigmoid
 
 

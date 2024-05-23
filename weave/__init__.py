@@ -1,5 +1,5 @@
-# neuroweave/__init__.py
-import neuroweave.cuda
+# weave/__init__.py
+import weave.cuda
 from .neuro_storage.saver import save_model
 from .neuro_storage.loader import load_model
 from .neuro_dataset.main import *
@@ -31,8 +31,8 @@ _types = [
     int8, int16, int32, int64, uint8, uint16, uint32, uint64,
 ]
 
-if neuroweave.cuda.is_available():  # add only the available types based on the GPU availability status
-    _types.extend(neuroweave.cuda._types)
-    _float_types.extend(neuroweave.cuda._float_types)
+if weave.cuda.is_available():  # add only the available types based on the GPU availability status
+    _types.extend(weave.cuda._types)
+    _float_types.extend(weave.cuda._float_types)
 
 __version__ = '1.0.0'

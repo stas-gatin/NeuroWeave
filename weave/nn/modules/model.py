@@ -1,6 +1,6 @@
-import neuroweave.nn
-from neuroweave import Tensor
-from neuroweave.cuda import Device
+import weave.nn
+from weave import Tensor
+from weave.cuda import Device
 import re
 import numpy as np
 
@@ -80,7 +80,7 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
     def __repr__(self) -> str:
         s = f'{self.__class__.__name__}('
         for name, value in self._layers.items():
-            if not isinstance(value, neuroweave.nn.Sequential):
+            if not isinstance(value, weave.nn.Sequential):
                 s += f'\n    ({name}): {value}'
             else:
                 seq_string = value.__repr__()
