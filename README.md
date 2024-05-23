@@ -56,13 +56,14 @@ graph TD;
     weave-->optim(Optimization);
     weave-->random(Neuro Functions);
     weave-->nn(Neural Network);
+    weave-->visualization(Visualization);
     nn-->modules(Modules);
     neuro_storage-->saver(Saver);
     neuro_storage-->loader(Loader);
 
     classDef done fill:#000,stroke:#00ff00,stroke-width:2px;
 
-    class neuro_storage,saver,loader,neuro_dataset,random,weave,nn,modules,network,optim done;
+    class neuro_storage,saver,loader,neuro_dataset,random,weave,nn,modules,network,optim,visualization done;
 
 ```
 
