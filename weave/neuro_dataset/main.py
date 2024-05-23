@@ -40,7 +40,8 @@ __all__ = [
     # Class for applying different transformations to different columns
     "ColumnTransformer",
     # Function for label encoding categorical variables
-    "label_encode"
+    "label_encode",
+    "train_test_split"
 ]
 
 
