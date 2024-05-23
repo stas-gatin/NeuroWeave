@@ -41,7 +41,7 @@ __all__ = [
     "ColumnTransformer",
     # Function for label encoding categorical variables
     "label_encode",
-    "train_test_split"
+    "train_test_split",
 ]
 
 

@@ -146,7 +146,7 @@ class Tensor(np.ndarray):
         return self + other
 
     def __iadd__(self, other: Any) -> "Tensor":
-        enable_grad = self._grad_enabled and other.grad_enabled
+        enable_grad = (self._grad_enabled and other.grad_enabled) if isinstance(other, Tensor) else self._grad_enabled
         out = self + other
         if enable_grad:
             HookManager.create_hooks(self, '+', alter=True, other=other)
@@ -163,7 +163,7 @@ class Tensor(np.ndarray):
         return (-self) + other
 
     def __isub__(self, other: Any) -> "Tensor":
-        enable_grad = self._grad_enabled and other.grad_enabled
+        enable_grad = (self._grad_enabled and other.grad_enabled) if isinstance(other, Tensor) else self._grad_enabled
         out = self + (-other)
         if enable_grad:
             HookManager.create_hooks(self, '-', alter=True, other=other)
@@ -215,7 +215,7 @@ class Tensor(np.ndarray):
         return self * other
 
     def __imul__(self, other: Any) -> "Tensor":
-        enable_grad = self._grad_enabled and other.grad_enabled
+        enable_grad = (self._grad_enabled and other.grad_enabled) if isinstance(other, Tensor) else self._grad_enabled
         out = self * other
         if enable_grad:
             HookManager.create_hooks(self, '*', alter=True, other=other)
@@ -332,12 +332,14 @@ class Tensor(np.ndarray):
             raise TypeError(f"Cannot divide Tensor by object of type {type(other)}.")
 
     def __itruediv__(self, other: Any) -> "Tensor":
+        enable_grad = (self._grad_enabled and other.grad_enabled) if isinstance(other, Tensor) else self._grad_enabled
         out = self / other
+        if enable_grad:
+            HookManager.create_hooks(self, '/', alter=True, other=other)
+        self._op = out._op
         self.grad = out.grad
         self.data = out.data
         self._populate(out.data)
-        self._prev = out._prev
-        self._op = out._op
         return self
 
     def __floordiv__(self, other: Any) -> "Tensor":

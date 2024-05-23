@@ -48,6 +48,7 @@ class HookManager:
     _iadd_hooks = 0
     _isub_hooks = 0
     _imul_hooks = 0
+    _idiv_hooks = 0
     _log_hooks = 0
     _softmax_hooks = 0
     _relu_hooks = 0
@@ -61,6 +62,8 @@ class HookManager:
                 name = '_isub_hooks'
             case '*':
                 name = '_imul_hooks'
+            case '/':
+                name = '_idiv_hooks'
             case 'log':
                 name = '_log_hooks'
             case 'softmax':
@@ -72,7 +75,7 @@ class HookManager:
         globals()[f'{name}{getattr(cls, name)}'] = hook_tensor.copy()  # We store a copy of the tenor in the hook
         if alter:
             # We change the children of the 'hook_tensor' in case we are doing an immediate operation with grad enabled
-            if isinstance(other, (np.ndarray, list)) or issubclass(other, np.ndarray):
+            if isinstance(other, (np.ndarray, list)) or issubclass(type(other), np.ndarray):
                 hook_tensor._prev = {id(globals()[f'{name}{getattr(cls, name)}']), id(other)}
             else:
                 hook_tensor._prev = {globals()[f'{name}{getattr(cls, name)}']}
