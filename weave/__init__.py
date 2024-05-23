@@ -6,6 +6,7 @@ from .neuro_dataset.main import *
 from .tensor import Tensor
 from .neuro_functions.functions import *
 from .nn import *
+from .visualization import *
 import numpy as np
 
 int8 = np.int8

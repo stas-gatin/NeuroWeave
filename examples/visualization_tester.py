@@ -1,6 +1,6 @@
 
 import weave
-from weave_weights import WeaveWeights
+from weave import WeaveWeights
 
 ten1 = weave.Tensor(data=[1, 2, 3])
 
