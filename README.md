@@ -43,7 +43,7 @@ weave.saver(model, file_path='path/to/save', overwrite=False)
 > [!WARNING]
 > Set overwrite=True to overwrite the model file.
 
-# Jerarquía de clases:
+# Class hierarchy:
 
 - ![#00ff00](https://placehold.co/15x15/00ff00/00ff00.png) `Done`
 - ![#ffff00](https://placehold.co/15x15/ffff00/ffff00.png) `In process`
@@ -56,13 +56,14 @@ graph TD;
     weave-->optim(Optimization);
     weave-->random(Neuro Functions);
     weave-->nn(Neural Network);
+    weave-->visualization(Visualization);
     nn-->modules(Modules);
     neuro_storage-->saver(Saver);
     neuro_storage-->loader(Loader);
 
     classDef done fill:#000,stroke:#00ff00,stroke-width:2px;
 
-    class neuro_storage,saver,loader,neuro_dataset,random,weave,nn,modules,network,optim done;
+    class neuro_storage,saver,loader,neuro_dataset,random,weave,nn,modules,network,optim,visualization done;
 
 ```
 
