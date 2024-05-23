@@ -49,6 +49,7 @@ def is_available() -> bool:
 
 __all__ = ['is_available', 'CUDA_IMPORT_FAILED', Device, CUDANotAvailableError, CUDADeviceCountError]
 
+
 if __name__ != "__main__" and CUDA_IMPORT_FAILED:
     warnings.warn("The required CUDA drivers and folders haven't been found. CUDA availability for this library is"
                   " unavailable.")
