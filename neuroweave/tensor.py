@@ -1,9 +1,9 @@
 from typing import Any, Union
 import numpy as np
 import re
-from weave._utils import HookManager, MemorySet  # import necessary classes to manage the garbage collector.
-import weave.cuda  # import cuda to allow Tensors to live on the GPU
-if weave.cuda.is_available():
+from neuroweave._utils import HookManager, MemorySet  # import necessary classes to manage the garbage collector.
+import neuroweave.cuda  # import cuda to allow Tensors to live on the GPU
+if neuroweave.cuda.is_available():
     import cupy as cp  # we still require CuPy for transformations
 
 
@@ -28,7 +28,7 @@ class Tensor(np.ndarray):
     """
 
     def __new__(cls, shape=None, dtype=None, buffer=None, offset=0, strides=None, order=None, data=None,
-                _children=(), _op=None, use_grad: bool = False, device: Union['weave.cuda.Device', str] = 'cpu'):
+                _children=(), _op=None, use_grad: bool = False, device: Union['neuroweave.cuda.Device', str] = 'cpu'):
         # We check whether there is a shape provided or we have to infer it from the data
         if shape is None and data is not None:
             # Handle differences between data on the CPU and the GPU
@@ -44,10 +44,10 @@ class Tensor(np.ndarray):
         return super().__new__(cls, shape, dtype, buffer, offset, strides, order)
 
     def __init__(self, shape=None, dtype=None, *, data=None, _children=(), _op=None, use_grad: bool = False,
-                 device: Union['weave.cuda.Device', str] = 'cpu'):
-        if use_grad is True and self.dtype not in [*weave._float_types, float]:
+                 device: Union['neuroweave.cuda.Device', str] = 'cpu'):
+        if use_grad is True and self.dtype not in [*neuroweave._float_types, float]:
             raise ValueError('Only Tensors with floating types support gradients.')
-        self.device = weave.cuda.Device(device) if isinstance(device, str) else device  # assign the correct device
+        self.device = neuroweave.cuda.Device(device) if isinstance(device, str) else device  # assign the correct device
         self._data: Any
         self.data = data
         if data is not None:
@@ -66,13 +66,13 @@ class Tensor(np.ndarray):
 
     def _populate(self, data):
         if self.device == 'cpu':
-            cpu_accepted_types = Union[np.ndarray, int, float, Tensor, list, *weave._types]
+            cpu_accepted_types = Union[np.ndarray, int, float, Tensor, list, *neuroweave._types]
             if not isinstance(data, cpu_accepted_types):
                 raise TypeError(f'Invalid data type for Tensor: {data.__class__.__name__}')
             # By using ellipsis indexing, we can refer to all the dimensions of the Tensor
             self[...] = data
         else:
-            cuda_accepted_types = Union[np.ndarray, int, float, cp.ndarray, Tensor, list, *weave._types]
+            cuda_accepted_types = Union[np.ndarray, int, float, cp.ndarray, Tensor, list, *neuroweave._types]
             if not isinstance(data, cuda_accepted_types):
                 raise TypeError(f'Invalid data type for Tensor: {data.__class__.__name__}')
             # By using ellipsis indexing, we can refer to all the dimensions of the Tensor
@@ -475,7 +475,7 @@ class Tensor(np.ndarray):
             if value is None:
                 self._data = np.asarray(self)
             else:
-                types = Union[np.ndarray, list, *weave._types, int, float, Tensor]
+                types = Union[np.ndarray, list, *neuroweave._types, int, float, Tensor]
                 self._data = value.get() if not isinstance(value, types) else np.asarray(value, dtype=self.dtype)
         else:
             if value is None:
@@ -539,7 +539,7 @@ class Tensor(np.ndarray):
         Transfers the tensor and all its attributes to the CPU memory if not already in it.
         """
         if not (self.device == 'cpu'):
-            self.device = weave.cuda.Device('cpu')
+            self.device = neuroweave.cuda.Device('cpu')
             self.data = self.data.get()
 
     def cuda(self):
@@ -547,7 +547,7 @@ class Tensor(np.ndarray):
         Transfers the tensor and all its attributes to the GPU memory if not already in it.
         """
         if self.device == 'cpu':
-            self.device = weave.cuda.Device('cuda')
+            self.device = neuroweave.cuda.Device('cuda')
             self.data = cp.asarray(self.data)
 
     # From this point onward, we implement many of the methods that a subclass from numpy.ndarray is expected to have.

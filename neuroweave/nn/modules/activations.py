@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from weave import Tensor, diag, outer, vstack
+from neuroweave import Tensor, diag, outer, vstack
 from .model import Model
 
 

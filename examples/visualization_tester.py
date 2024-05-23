@@ -1,8 +1,8 @@
 
-import weave
-from weave import WeaveWeights
+import neuroweave
+from neuroweave import WeaveWeights
 
-ten1 = weave.Tensor(data=[1, 2, 3])
+ten1 = neuroweave.Tensor(data=[1, 2, 3])
 
 visualizer = WeaveWeights()
 visualizer.set_weights(ten1, ['Layer1', 'Output'])

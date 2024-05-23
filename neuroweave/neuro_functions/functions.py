@@ -28,12 +28,12 @@ at https://numpy.org/doc/.
 
 import numpy as np
 
-import weave.cuda
+import neuroweave.cuda
 
-if weave.cuda.is_available():
+if neuroweave.cuda.is_available():
     import cupy as cp
 
-from weave import Tensor
+from neuroweave import Tensor
 
 __all__ = [
     'ones',

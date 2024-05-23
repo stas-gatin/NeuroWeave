@@ -1,7 +1,7 @@
-import weave
+import neuroweave
 import matplotlib.pyplot as plt
 import numpy as np
-if weave.cuda.is_available():
+if neuroweave.cuda.is_available():
     import cupy as cp
 
 
@@ -15,7 +15,7 @@ class WeaveWeights:
         Sets the weights of the neural network.
 
         Parameters:
-        weights (list of weave.Tensor): List of weight tensors for each layer.
+        weights (list of neuroweave.Tensor): List of weight tensors for each layer.
         layer_names (list of str): List of layer names.
         """
         # Check and extract the weights from the tensor

@@ -12,7 +12,7 @@ LONG_DESCRIPTION = ('A Machine Learning library with the basic components necess
                     'Neural Network Models')
 
 setup(
-    name='weave',
+    name='neuroweave',
     version=VERSION,
     author='Gabriel Niculescu, Carlos Molera, Stanislav Gatin, Patricia Pérez, Hugo Urbán',
     author_email='gabriellichu@gmail.com, info.prostaprog@gmail.com, carlosmoleracanals@gmail.com,'

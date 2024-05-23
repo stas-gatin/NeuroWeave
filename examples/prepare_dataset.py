@@ -1,7 +1,7 @@
-import weave
-from weave import StandardScaler
+import neuroweave
+from neuroweave import StandardScaler
 
-my_data = weave.Dataset(path="teleCust1000t.csv", file_type='csv')
+my_data = neuroweave.Dataset(path="teleCust1000t.csv", file_type='csv')
 
 # -- StandardScaler --
 #scaler = StandardScaler()

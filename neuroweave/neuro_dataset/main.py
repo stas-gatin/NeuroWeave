@@ -295,7 +295,7 @@ class StandardScaler:
     Example:
         Suppose you have a dataset and you want to standardize certain features:
 
-        my_data = weave.Dataset(path="customer.csv", file_type='csv')
+        my_data = neuroweave.Dataset(path="customer.csv", file_type='csv')
 
         # Define transformers
 
@@ -400,7 +400,7 @@ def one_hot_encode(dataset, column):
         Example:
             Suppose you have a dataset loaded using a custom Dataset class like this:
 
-            my_data = weave.Dataset(path="customer.csv", file_type='csv')
+            my_data = neuroweave.Dataset(path="customer.csv", file_type='csv')
 
             # Define transformers
 
@@ -443,7 +443,7 @@ def label_encode(dataset, column):
     Example:
         Suppose you have a dataset loaded using a custom Dataset class like this:
 
-        my_data = weave.Dataset(path="customer.csv", file_type='csv')
+        my_data = neuroweave.Dataset(path="customer.csv", file_type='csv')
 
         # Define transformers
 
@@ -508,7 +508,7 @@ class ColumnTransformer:
     Example:
         Suppose you have a dataset loaded using a custom Dataset class like this:
 
-        my_data = weave.Dataset(path="customer.csv", file_type='csv')
+        my_data = neuroweave.Dataset(path="customer.csv", file_type='csv')
 
         # Define transformers
         transformers = [

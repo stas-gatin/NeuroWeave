@@ -1,6 +1,6 @@
-from weave import Tensor
+from neuroweave import Tensor
 from .model import Model
-from weave import uniform
+from neuroweave import uniform
 import numpy as np
 
 
@@ -27,7 +27,7 @@ class LayerDense(Model):
 
     Methods
     -----------------------------------------------
-    forward(inputs: weave.Tensor)
+    forward(inputs: neuroweave.Tensor)
         Applies a linear transformation to the inputs. The specific formula depends on whether bias is True or False.
     """
     def __init__(self, in_neurons: int, out_neurons: int, bias: bool = True):

@@ -67,8 +67,8 @@ class Device:
 
     def __repr__(self):
         if isinstance(self._loc, str):
-            return f"weave.cuda.Device(CPU)"
-        return f'weave.cuda.Device({self._device_type}:{self._loc.id})'
+            return f"neuroweave.cuda.Device(CPU)"
+        return f'neuroweave.cuda.Device({self._device_type}:{self._loc.id})'
 
 
 class NoCUDADevice:
@@ -107,4 +107,4 @@ class NoCUDADevice:
         return "CPU"
 
     def __repr__(self):
-        return 'weave.cuda.Device(CPU)'
+        return 'neuroweave.cuda.Device(CPU)'

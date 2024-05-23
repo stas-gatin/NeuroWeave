@@ -1,4 +1,4 @@
-from weave import Tensor
+from neuroweave import Tensor
 
 # Example of creating a Tensor
 ten1 = Tensor(data=[1, 2, 3])

@@ -1,5 +1,5 @@
 from .model import Model
-from weave import Tensor
+from neuroweave import Tensor
 from .activations import Softmax, Sigmoid
 
 
