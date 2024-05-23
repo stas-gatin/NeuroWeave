@@ -10,6 +10,11 @@
 
 NeuroWeave is a powerful and intuitive library for creating and training neural networks. With NeuroWeave, you can quickly build complex models, experiment with architectures, and adjust hyperparameters while maintaining control over the training process details.
 
+## Instalation
+To install the current release:
+```
+$ pip install neuroweave
+```
 
 > [!IMPORTANT]
 > If you found a bug, please contact the repository creators.
