@@ -47,7 +47,7 @@ def is_available() -> bool:
     return False
 
 
-__all__ = ['is_available', 'CUDA_IMPORT_FAILED', Device, CUDANotAvailableError, CUDADeviceCountError]
+__all__ = ['is_available', 'CUDA_IMPORT_FAILED', 'Device', 'CUDANotAvailableError', 'CUDADeviceCountError']
 
 
 if __name__ != "__main__" and CUDA_IMPORT_FAILED:
