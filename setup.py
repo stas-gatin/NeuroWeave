@@ -1,4 +1,10 @@
 from setuptools import setup, find_packages
+import codecs
+import os
+
+here = os.path.abspath(os.path.dirname(__file__))
+with codecs.open(os.path.join(here, 'README.md'), encoding='utf-8') as fh:
+    long_description = fh.read()
 
 VERSION = '0.0.1'
 DESCRIPTION = 'A small machine learning library.'
@@ -13,7 +19,7 @@ setup(
                  'pperezferre@gmail.com, hugourmaz@gmail.com',
     description=DESCRIPTION,
     long_description_content_type='text/markdown',
-    long_description=LONG_DESCRIPTION,
+    long_description=long_description,
     packages=find_packages(),
     install_requires=['h5py>=3.11.0', 'numpy>=1.26.4', 'pandas>=2.2.2', 'fastrlock>=0.8.2',
                       'python-dateutil>=2.9.0.post0', 'pytz>=2024.1', 'six>=1.16.0', 'tzdata>=2024.1'],
