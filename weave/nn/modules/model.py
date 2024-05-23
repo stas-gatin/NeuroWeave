@@ -95,7 +95,6 @@ class Model(metaclass=ModelMeta):  # Model is a layer with layers inside (like a
 
     # Show the number of tensor we have in our dictionary and the number of parameters we add
     def num_params(self):
-        print(f'Number of tensors: {len(self._parameters)}')
         print(f'Number of parameters: {self._num_parameters}')
 
     def _depth_call(self, op):

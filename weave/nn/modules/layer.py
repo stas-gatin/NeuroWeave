@@ -32,6 +32,7 @@ class LayerDense(Model):
     """
     def __init__(self, in_neurons: int, out_neurons: int, bias: bool = True):
         super().__init__()
+        # We create the weights and biases with a uniform distribution to restrain the range of values for each element.
         self.weights = uniform(-np.sqrt(1 / in_neurons), np.sqrt(1 / in_neurons), (in_neurons, out_neurons),
                                use_grad=True, device=self.device)
         if bias:

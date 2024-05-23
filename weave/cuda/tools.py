@@ -86,7 +86,7 @@ class NoCUDADevice:
         raise CUDANotAvailableError("CUDA drivers haven't been found. Cannot put tensors in a inaccessible device.")
 
     def __eq__(self, other: Any) -> bool:
-        assert isinstance(other, (Device, str)), 'Cannot compare with classes other than Device or str.'
+        assert isinstance(other, (NoCUDADevice, str)), 'Cannot compare with classes other than Device or str.'
         if isinstance(other, Device):
             return str(self) == str(other)
         s, *num1 = str(self).split(':')
