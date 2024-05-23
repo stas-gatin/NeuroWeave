@@ -1,7 +1,7 @@
-
 import weave
 import matplotlib.pyplot as plt
-import cupy as cp
+if weave.cuda.is_available():
+    import cupy as cp
 
 
 class WeaveWeights:
@@ -43,7 +43,10 @@ class WeaveWeights:
 
         for i, (weight, layer_name, ax) in enumerate(zip(self.weights, self.layer_names, axes)):
             # Convert tensor to a numpy array for visualization
-            weight_np = cp.asnumpy(weight)
+            if not isinstance(weight, np.ndarray):  # We consider the possibility if weights being on the CPU or the GPU.
+                weight_np = cp.asnumpy(weight)
+            else:
+                weight_np = np.asarray(weight)
 
             im = ax.matshow(weight_np, cmap='viridis')
 
