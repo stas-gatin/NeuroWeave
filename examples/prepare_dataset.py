@@ -1,19 +1,29 @@
-import weave
-from weave import StandardScaler, train_test_split
+from weave import Dataset
+from weave import StandardScaler, one_hot_encode, ColumnTransformer, label_encode
 
-my_data = weave.Dataset(path="teleCust1000t.csv", file_type='csv')
+# -- ColumnTransformer --
 
-# -- StandardScaler --
-#scaler = StandardScaler()
-#norm = scaler.fit(my_data.data)
-#scaled_data = scaler.transform(my_data.data)
-#print(scaled_data)
-
-# -- StandardScaler -- otro metodo
-scaled_data2 = StandardScaler().fit_transform(my_data.data)
-print(scaled_data2)
-
-
-# train_test_split
-X_train, X_test, y_train, y_test = train_test_split(data=scaled_data2, x=['region', 'age'], y='custcat', test_size=0.2, seed=10)
-
+# Load dataset
+my_data = Dataset(path="customer.csv", file_type='csv')
+# _____________EXAMPLE 1_______________________________________________
+# Define transformers (using one-hot encoder for categorical data)
+transformers = [
+    ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu", "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted", "DebtIncomeRatio"]),
+    ('onehot', one_hot_encode, 'Address')
+]
+# Create ColumnTransformer instance
+ct = ColumnTransformer(transformers)
+# Fit and transform the dataset
+df_transformed = ct.fit_transform(my_data)
+print(df_transformed)
+# ______________EXAMPLE 2______________________________________________
+# Define transformers (using label encoder for categorical data)
+transformers = [
+    ('scaler', StandardScaler(), ['Customer Id', 'Age', "Edu", "Years Employed", "Income", "Card Debt", "Other Debt", "Defaulted", "DebtIncomeRatio"]),
+    ('onehot', label_encode, 'Address')
+]
+# Create ColumnTransformer instance
+ct = ColumnTransformer(transformers)
+# Fit and transform the dataset
+df_transformed = ct.fit_transform(my_data)
+print(df_transformed)
