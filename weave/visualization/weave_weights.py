@@ -9,32 +9,29 @@ class WeaveWeights:
         self.weights = []
         self.layer_names = []
 
-
-    def set_weights(self, weights, layer_names = None):
-        '''
+    def set_weights(self, weights, layer_names=None):
+        """
         Sets the weights of the neural network.
 
         Parameters:
         weights (list of weave.Tensor): List of weight tensors for each layer.
         layer_names (list of str): List of layer names.
-        '''
+        """
         # Check and extract the weights from the tensor
         if all(isinstance(weight, weave.Tensor) for weight in weights):
             self.weights = [weight.data for weight in weights]
-
         else:
             raise ValueError('Weights must be part of the tensor')
 
         if layer_names is None:
             self.layer_names = [f'Layer {i+1}' for i in range(len(weights))]
-
         else:
             self.layer_names = layer_names
 
     def visualize(self):
-        '''
+        """
         Visualizes the weights of the neural network
-        '''
+        """
 
         num_layers = len(self.weights)
 
@@ -45,7 +42,6 @@ class WeaveWeights:
             axes = [axes]
 
         for i, (weight, layer_name, ax) in enumerate(zip(self.weights, self.layer_names, axes)):
-
             # Convert tensor to a numpy array for visualization
             weight_np = cp.asnumpy(weight)
 
@@ -59,6 +55,3 @@ class WeaveWeights:
 
         plt.tight_layout()
         plt.show()
-
-
-
