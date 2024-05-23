@@ -28,7 +28,7 @@ setup(
     keywords=['Python', 'Machine Learning'],
     classifiers=[
         'Development Status :: 4 - Beta',
-        'Environment :: GPU :: NVIDIA CUDA :: 12 :: 12.4',
+        'Environment :: GPU :: NVIDIA CUDA :: 12',
         'Intended Audience :: Education',
         'Intended Audience :: Developers',
         'Operating System :: Microsoft :: Windows',
